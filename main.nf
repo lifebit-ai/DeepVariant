@@ -5,61 +5,57 @@
 *
 */
 
-//Name of the directory in which the vcf result will be stored
-params.resultdir = "RESULTS-DeepVariant";
 
-params.regions="chr20:10,000,000-10,010,000";
-params.n_shards="4";
 
+/*
+* INPUT FOLDER
+*
+* example of content:
+*
+* NA12878_S1.chr20.10_10p1mb.bam			ucsc.hg19.chr20.unittest.fasta
+* NA12878_S1.chr20.10_10p1mb.bam.bai		ucsc.hg19.chr20.unittest.fasta.fai
+* test_nist.b37_chr20_100kbp_at_10mb.bed		ucsc.hg19.chr20.unittest.fasta.gz
+* test_nist.b37_chr20_100kbp_at_10mb.vcf.gz	ucsc.hg19.chr20.unittest.fasta.gz.fai
+* test_nist.b37_chr20_100kbp_at_10mb.vcf.gz.tbi	ucsc.hg19.chr20.unittest.fasta.gz.gzi
+*/
 params.input="/Users/luisasantus/awsProva/input"
-input_file= file(params.input);
 
+
+/*
+* INPUT FOLDER
+*
+* example of content:
+* model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
+*/
+params.modelFolder="/Users/luisasantus/awsProva/models";
+params.modelName="model.ckpt";
+
+// Names of the file to be used
 params.bam_name="NA12878_S1.chr20.10_10p1mb.bam";
 params.ref_name="ucsc.hg19.chr20.unittest.fasta";
 
+//OTHER PARAMETERS
+params.regions="chr20:10,000,000-10,010,000";
+params.n_shards="1";
 
-params.bam="/Users/luisasantus/awsProva/data/NA12878_S1.chr20.10_10p1mb.bam";
-params.bai="/Users/luisasantus/awsProva/data/NA12878_S1.chr20.10_10p1mb.bam.bai";
-params.fai="/Users/luisasantus/awsProva/data/ucsc.hg19.chr20.unittest.fasta.fai"
-params.ref="/Users/luisasantus/awsProva/data/ucsc.hg19.chr20.unittest.fasta";
-params.ref_gz="/Users/luisasantus/awsProva/data/ucsc.hg19.chr20.unittest.fasta.gz";
-params.ref_gz_gzi="/Users/luisasantus/awsProva/data/ucsc.hg19.chr20.unittest.fasta.gz.gzi";
 
-params.ref_gz_fai="/Users/luisasantus/awsProva/data/ucsc.hg19.chr20.unittest.fasta.gz.fai";
+params.nameOutput="output";
+//Name of the directory in which the vcf result will be stored
+params.resultdir = "RESULTS-DeepVariant";
+params.outputdir="quickstart-output"
+params.log="./logs"
 
-params.modelFolder="/Users/luisasantus/awsProva/models";
+//Files
+input_folder= file(params.input);
 model=file("${params.modelFolder}");
 
-model1=("${params.modelFolder}/model.ckpt.data-00000-of-00001");
-model2=("${params.modelFolder}/model.ckpt.index");
-model3=("${params.modelFolder}/model.ckpt.meta");
 
-params.modelName="model.ckpt";
-
-params.output_dir ="quickstart-output"
-
-
-
-
-
-ref_gz_file = file(params.ref_gz);
-ref_gz_gzi_file = file(params.ref_gz_gzi);
-ref_gz_fai_file = file(params.ref_gz_fai);
-
-ref_channel = Channel.from(file(params.ref))
-bam_channel = Channel.from(file(params.bam))
-bai_channel = Channel.from(file(params.bai))
-fai_channel = Channel.from(file(params.fai))
 
 
 process makeExamples{
 
   input:
-  file 'dv2/input' from input_file
-  //file 'file.bam' from bam_channel
-  //file 'file.bai' from bai_channel
-  //file 'reference.fasta.fai' from fai_channel
-  //file 'reference.fasta' from ref_channel
+  file 'dv2/input' from input_folder
 
   output:
   file 'examples.tfrecord.gz' into examples
@@ -81,7 +77,7 @@ process call_variants{
   input:
   file 'examples.tfrecord.gz' from examples
   file 'dv2/models' from model
-  file 'dv2/input' from input_file
+  file 'dv2/input' from input_folder
 
   output:
   file 'call_variants_output.tfrecord' into called_variants
@@ -101,9 +97,7 @@ process postprocess_variants{
   publishDir params.resultdir, mode: 'copy'
 
   input:
-    file 'reference.fasta.gz' from ref_gz_file
-    file 'reference.fasta.gz.gzi' from ref_gz_gzi_file
-    file 'reference.fasta.gz.fai' from ref_gz_fai_file
+    file 'dv2/input' from input_folder
     file 'call_variants_output.tfrecord' from called_variants
 
   output:
@@ -112,7 +106,7 @@ process postprocess_variants{
   script:
   """
     /opt/deepvariant/bin/postprocess_variants \
-    --ref 'reference.fasta.gz' \
+    --ref 'dv2/input/${params.ref_name}.gz' \
     --infile call_variants_output.tfrecord \
     --outfile output.vcf
   """
