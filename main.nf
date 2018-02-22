@@ -18,8 +18,9 @@
 * test_nist.b37_chr20_100kbp_at_10mb.vcf.gz	ucsc.hg19.chr20.unittest.fasta.gz.fai
 * test_nist.b37_chr20_100kbp_at_10mb.vcf.gz.tbi	ucsc.hg19.chr20.unittest.fasta.gz.gzi
 */
-params.input="/Users/luisasantus/awsProva/input"
 
+//params.input="/Users/luisasantus/awsProva/input"
+params.input="s3://deepvariant-test/input"
 
 /*
 * INPUT FOLDER
@@ -27,7 +28,8 @@ params.input="/Users/luisasantus/awsProva/input"
 * example of content:
 * model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
 */
-params.modelFolder="/Users/luisasantus/awsProva/models";
+//params.modelFolder="/Users/luisasantus/awsProva/models";
+params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 
 // Names of the file to be used
