@@ -19,7 +19,7 @@
 * test_nist.b37_chr20_100kbp_at_10mb.vcf.gz.tbi	ucsc.hg19.chr20.unittest.fasta.gz.gzi
 */
 
-//params.input="/Users/luisasantus/awsProva/input"
+//params.input="$baseDir/data/input"
 params.input="s3://deepvariant-test/input"
 
 /*
@@ -28,7 +28,7 @@ params.input="s3://deepvariant-test/input"
 * example of content:
 * model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
 */
-//params.modelFolder="/Users/luisasantus/awsProva/models";
+//params.modelFolder="$baseDir/data/model";
 params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 
@@ -38,9 +38,10 @@ params.ref_name="ucsc.hg19.chr20.unittest.fasta";
 
 //OTHER PARAMETERS
 params.regions="chr20:10,000,000-10,010,000";
+
+
+
 params.n_shards="1";
-
-
 params.nameOutput="output";
 //Name of the directory in which the vcf result will be stored
 params.resultdir = "RESULTS-DeepVariant";
@@ -115,5 +116,5 @@ process postprocess_variants{
 }
 
 workflow.onComplete {
-	println ( workflow.success ? "Done!" : "Oops .. something went wrong" )
+	println ( workflow.success ? "Done!" : "Something went wrong" )
 }
