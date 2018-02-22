@@ -55,6 +55,8 @@ In the following lines an overview on how DeepVariants parameters from DeepVaria
 - **params.regions** regions which need to be analyzed. 
     * Example: 
     params.regions="chr20:10,000,000-10,010,000";
+    
+    
 
     
     
