@@ -19,8 +19,8 @@
 * test_nist.b37_chr20_100kbp_at_10mb.vcf.gz.tbi	ucsc.hg19.chr20.unittest.fasta.gz.gzi
 */
 
-//params.input="$baseDir/data/input"
-params.input="s3://deepvariant-test/input"
+params.input="$baseDir/data/input"
+//params.input="s3://deepvariant-test/input"
 
 /*
 * INPUT FOLDER
@@ -28,8 +28,8 @@ params.input="s3://deepvariant-test/input"
 * example of content:
 * model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
 */
-//params.modelFolder="$baseDir/data/model";
-params.modelFolder="s3://deepvariant-test/models"
+params.modelFolder="$baseDir/data/models";
+//params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 
 // Names of the file to be used
@@ -39,9 +39,10 @@ params.ref_name="ucsc.hg19.chr20.unittest.fasta";
 //OTHER PARAMETERS
 params.regions="chr20:10,000,000-10,010,000";
 
+params.n_shards=2;
+numberShardsMinusOne=params.n_shards-1;
+shardsChannel= Channel.from( 0..params.n_shards);
 
-
-params.n_shards="1";
 params.nameOutput="output";
 //Name of the directory in which the vcf result will be stored
 params.resultdir = "RESULTS-DeepVariant";
@@ -52,8 +53,7 @@ params.log="./logs"
 input_folder= file(params.input);
 model=file("${params.modelFolder}");
 
-
-
+///opt/deepvariant/bin/make_examples \
 
 process makeExamples{
 
@@ -61,24 +61,31 @@ process makeExamples{
   file 'dv2/input' from input_folder
 
   output:
-  file 'examples.tfrecord.gz' into examples
+  file "shardedExamples" into examples
 
   script:
   """
-  /opt/deepvariant/bin/make_examples \
-  --mode calling   \
-  --ref "dv2/input/${params.ref_name}"   \
-  --reads "dv2/input/${params.bam_name}" \
-  --regions "${params.regions}" \
-  --examples "examples.tfrecord.gz"
+    mkdir shardedExamples
+
+    time seq 0 $numberShardsMinusOne | \
+    parallel --eta --halt 2 \
+      python /opt/deepvariant/bin/make_examples.zip \
+      --mode calling   \
+      --ref "dv2/input/${params.ref_name}"   \
+      --reads "dv2/input/${params.bam_name}" \
+      --regions "${params.regions}" \
+      --examples "shardedExamples/examples.tfrecord@${params.n_shards}.gz"\
+      --task {}
   """
 }
+
+
 
 
 process call_variants{
 
   input:
-  file 'examples.tfrecord.gz' from examples
+  file 'shardedExamples' from examples
   file 'dv2/models' from model
   file 'dv2/input' from input_folder
 
@@ -89,7 +96,7 @@ process call_variants{
   """
   /opt/deepvariant/bin/call_variants \
     --outfile call_variants_output.tfrecord \
-    --examples examples.tfrecord.gz \
+    --examples shardedExamples/examples.tfrecord@${params.n_shards}.gz \
     --checkpoint dv2/models/${params.modelName}
   """
 
