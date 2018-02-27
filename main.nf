@@ -19,8 +19,8 @@
 * ucsc.hg19.chr20.unittest.fasta.gz.gzi
 */
 
-params.input="$baseDir/data/input"
-//params.input="s3://deepvariant-test/input"
+//params.input="$baseDir/data/input"
+params.input="s3://deepvariant-test/input"
 
 /*
 * INPUT FOLDER
@@ -28,15 +28,13 @@ params.input="$baseDir/data/input"
 * example of content:
 * model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
 */
-params.modelFolder="$baseDir/data/models";
-//params.modelFolder="s3://deepvariant-test/models"
+//params.modelFolder="$baseDir/data/models";
+params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 
 // Names of the file to be used
-//params.bam_definition="NA12878_S1.chr20.10_10p1mb.bam";
 params.bam_definition=".bam";
 // If needed
-//params.bam_definition=".bam";
 params.ref_name="ucsc.hg19.chr20.unittest.fasta";
 
 //Obtain all bam files in input file directory
@@ -68,14 +66,11 @@ params.log="./logs"
 input_folder= file(params.input);
 model=file("${params.modelFolder}");
 
-///opt/deepvariant/bin/make_examples \
-
 process makeExamples{
 
   input:
   val bam from bamchannel
   file 'dv2/input' from input_folder
-
 
   output:
   set val(bam),  file("shardedExamples") into examples
@@ -139,5 +134,5 @@ process postprocess_variants{
 
 
 workflow.onComplete {
-    println ( workflow.success ? "Done! \n You can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
+    println ( workflow.success ? "Done! \nYou can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
 }
