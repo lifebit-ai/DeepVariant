@@ -5,7 +5,21 @@
 *
 */
 
-
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import java.util.List;
 
 /*
 * INPUT FOLDER
@@ -37,15 +51,58 @@ params.bam_definition=".bam";
 // If needed
 params.ref_name="ucsc.hg19.chr20.unittest.fasta";
 
-//Obtain all bam files in input file directory
-bamchannel = Channel.create()
-File dir = new File("${params.input}");
-for(File f : dir.listFiles()){
-  if(f.getName().endsWith(params.bam_definition)){
-        bamchannel<<f.getName();
-  }
+
+// CONTROL CONTENT OF FOLDER
+if(params.input.startsWith("s3")){
+  bamchannel = Channel.create()
+  String[] s3Info = params.input.replaceAll("s3://","").split("/");
+  String bucketName = s3Info[0];
+  String folderKey = s3Info[1];
+  ListObjectsRequest listObjectsRequest =
+                                  new ListObjectsRequest()
+                                        .withBucketName(bucketName)
+                                        .withPrefix(folderKey + "/");
+      List<String> keys = new ArrayList<>();
+      AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider());
+      ObjectListing objects = s3Client.listObjects(listObjectsRequest);
+      for (;;) {
+          List<S3ObjectSummary> summaries = objects.getObjectSummaries();
+          if (summaries.size() < 1) {
+              break;
+          }
+          for(S3ObjectSummary s : summaries){
+            keys.add(s.getKey());
+          }
+          objects = s3Client.listNextBatchOfObjects(objects);
+      }
+      for(String key : keys){
+          if(key.endsWith(params.bam_definition)){
+            bamchannel << key.replaceAll(folderKey,"").replaceAll("/", "");
+          }
+      }
+      bamchannel.close();
 }
-bamchannel.close();
+else{
+  //Obtain all bam files in input file directory
+  if(params.aws == "false" ){
+    bamchannel = Channel.create()
+    File dir = new File("${params.input}");
+    for(File f : dir.listFiles()){
+      if(f.getName().endsWith(params.bam_definition)){
+            bamchannel<<f.getName();
+      }
+    }
+    bamchannel.close();
+  }
+
+}
+
+
+
+
+
+
+//bamchanne=Channel.fromPath("${params.input}/*.bam").println();
 
 //OTHER PARAMETERS
 params.regions="chr20:10,000,000-10,010,000";
