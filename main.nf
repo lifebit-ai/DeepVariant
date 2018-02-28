@@ -4,7 +4,6 @@
 *  LifeBit Biotech, 2018.
 *
 */
-
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -96,13 +95,6 @@ else{
   }
 
 }
-
-
-
-
-
-
-//bamchanne=Channel.fromPath("${params.input}/*.bam").println();
 
 //OTHER PARAMETERS
 params.regions="chr20:10,000,000-10,010,000";
