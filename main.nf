@@ -32,8 +32,8 @@ import java.util.List;
 * ucsc.hg19.chr20.unittest.fasta.gz.gzi
 */
 
-//params.input="$baseDir/data/input"
-params.input="s3://deepvariant-test/input"
+params.input="$baseDir/data/input"
+//params.input="s3://deepvariant-test/input"
 
 /*
 * INPUT FOLDER
@@ -83,7 +83,6 @@ if(params.input.startsWith("s3")){
 }
 else{
   //Obtain all bam files in input file directory
-  if(params.aws == "false" ){
     bamchannel = Channel.create()
     File dir = new File("${params.input}");
     for(File f : dir.listFiles()){
@@ -92,7 +91,6 @@ else{
       }
     }
     bamchannel.close();
-  }
 
 }
 
