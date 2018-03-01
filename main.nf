@@ -4,95 +4,22 @@
 *  LifeBit Biotech, 2018.
 *
 */
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+
 import java.util.List;
 
 /*
 * INPUT FOLDER
-*
-* example of content:
-*
-* NA12878_S1.chr20.10_10p1mb.bam			ucsc.hg19.chr20.unittest.fasta
-* NA12878_S1.chr20.10_10p1mb.bam.bai		ucsc.hg19.chr20.unittest.fasta.fai
-* ucsc.hg19.chr20.unittest.fasta.gz
-* ucsc.hg19.chr20.unittest.fasta.gz.fai
-* ucsc.hg19.chr20.unittest.fasta.gz.gzi
-*/
-
-params.input="$baseDir/data/input"
-//params.input="s3://deepvariant-test/input"
-
-/*
-* INPUT FOLDER
-*
 * example of content:
 * model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
 */
-//params.modelFolder="$baseDir/data/models";
-params.modelFolder="s3://deepvariant-test/models"
+params.modelFolder="$baseDir/data/models";
+//params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 
-// Names of the file to be used
+// Names of the file to be usedcd
 params.bam_definition=".bam";
 // If needed
 params.ref_name="ucsc.hg19.chr20.unittest.fasta";
-
-
-// CONTROL CONTENT OF FOLDER
-if(params.input.startsWith("s3")){
-  bamchannel = Channel.create()
-  String[] s3Info = params.input.replaceAll("s3://","").split("/");
-  String bucketName = s3Info[0];
-  String folderKey = s3Info[1];
-  ListObjectsRequest listObjectsRequest =
-                                  new ListObjectsRequest()
-                                        .withBucketName(bucketName)
-                                        .withPrefix(folderKey + "/");
-      List<String> keys = new ArrayList<>();
-      AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider());
-      ObjectListing objects = s3Client.listObjects(listObjectsRequest);
-      for (;;) {
-          List<S3ObjectSummary> summaries = objects.getObjectSummaries();
-          if (summaries.size() < 1) {
-              break;
-          }
-          for(S3ObjectSummary s : summaries){
-            keys.add(s.getKey());
-          }
-          objects = s3Client.listNextBatchOfObjects(objects);
-      }
-      for(String key : keys){
-          if(key.endsWith(params.bam_definition)){
-            bamchannel << key.replaceAll(folderKey,"").replaceAll("/", "");
-          }
-      }
-      bamchannel.close();
-}
-else{
-  //Obtain all bam files in input file directory
-    bamchannel = Channel.create()
-    File dir = new File("${params.input}");
-    for(File f : dir.listFiles()){
-      if(f.getName().endsWith(params.bam_definition)){
-            bamchannel<<f.getName();
-      }
-    }
-    bamchannel.close();
-
-}
 
 //OTHER PARAMETERS
 params.regions="chr20:10,000,000-10,010,000";
@@ -110,17 +37,90 @@ params.outputdir="quickstart-output"
 params.log="./logs"
 
 //Files
-input_folder= file(params.input);
 model=file("${params.modelFolder}");
 
+
+
+
+/*
+* Generating and/or parsing the bai, fai, fai.gz, ... needed for the makeExamples process.
+* Preprocessing bam files adding sample info if not contained
+*/
+
+params.bam_folder="/Users/luisasantus/DeepVariant/data/input";
+params.bai_folder="none";
+params.fasta="/Users/luisasantus/DeepVariant/data/input/ucsc.hg19.chr20.unittest.fasta";
+params.fai="none";
+
+fasta=file(params.fasta);
+
+bamChannel= Channel.fromPath("${params.bam_folder}/*.bam");
+bai_folder=Channel.fromPath("${params.bai_folder}/*.bai");
+
+
+
+process preprocessFASTA{
+
+  container 'luisas/samtools'
+
+  input:
+  file fasta from fasta
+
+  output:
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi") into fastaChannel
+
+  script:
+  """
+  ## if not given --> cretae index for fasta file (fai)ls
+  [[ "${params.fai}" == "none" ]] && samtools faidx $fasta && bgzip -c -i ${fasta} > ${fasta}.gz && samtools faidx "${fasta}.gz"  || cp ${params.fai} .
+  """
+
+}
+
+
+process preprocessBAM{
+
+  container 'luisas/samtools'
+  publishDir "$baseDir/out"
+
+
+  input:
+  file bam from bamChannel
+
+  output:
+  set file(bam), file("${bam}.bai") into completeChannel
+
+  script:
+  """
+    ## if not bam files
+    [[ "${params.bai_folder}" == "none" ]] && samtools index $bam
+
+    [[ `samtools view -H $bam | grep '@RG' | wc -l`   > 0 ]] || java -jar picard.jar AddOrReplaceReadGroups \
+      I=$bam \
+      O=$bam \
+      RGID=4 \
+      RGLB=lib1 \
+      RGPL=illumina \
+      RGPU=unit1 \
+      RGSM=20
+  """
+
+}
+
+
+
+/*
+* Getting bam files and converting them to images ( named examples )
+*/
 process makeExamples{
 
   input:
-  val bam from bamchannel
-  file 'dv2/input' from input_folder
+  set file(bam), file("${bam}.bai") from completeChannel
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi") from fastaChannel
+
 
   output:
-  set val(bam),  file("shardedExamples") into examples
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") into examples
 
   script:
   """
@@ -130,24 +130,26 @@ process makeExamples{
     parallel --eta --halt 2 \
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
-      --ref "dv2/input/${params.ref_name} "\
-      --reads "dv2/input/$bam" \
+      --ref "${fasta} "\
+      --reads "$bam" \
       --regions "${params.regions}" \
       --examples "shardedExamples/examples.tfrecord@${params.n_shards}.gz"\
       --task {}
   """
 }
 
+/*
+* Doing the variant calling based on the ML trained model.
+*/
 
 process call_variants{
 
   input:
-   set val(bam), file('shardedExamples') from examples
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") from examples
   file 'dv2/models' from model
-  file 'dv2/input' from input_folder
 
   output:
-   set val(bam), file('call_variants_output.tfrecord') into called_variants
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam), file('call_variants_output.tfrecord') into called_variants
 
   script:
   """
@@ -159,13 +161,15 @@ process call_variants{
 
 }
 
+/*
+* Trasforming the variant calling output (tfrecord file) into a standard vcf file.
+*/
 process postprocess_variants{
 
   publishDir params.resultdir, mode: 'copy'
 
   input:
-   file 'dv2/input' from input_folder
-    set val(bam),file('call_variants_output.tfrecord') from called_variants
+  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam),file('call_variants_output.tfrecord') from called_variants
 
   output:
    set val(bam),file("$bam--${params.ref_name}.vcf") into postout
@@ -173,7 +177,7 @@ process postprocess_variants{
   script:
   """
     /opt/deepvariant/bin/postprocess_variants \
-    --ref 'dv2/input/${params.ref_name}.gz' \
+    --ref "${fasta}.gz" \
     --infile call_variants_output.tfrecord \
     --outfile "$bam--${params.ref_name}.vcf"
   """
