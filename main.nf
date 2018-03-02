@@ -7,56 +7,71 @@
 
 import java.util.List;
 
-/*
-* INPUT FOLDER
-* example of content:
-* model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
-*/
+/*--------------------------------------------------
+  Model folder
+  Content: trained model.
+  For exact information refer to documentation.
+---------------------------------------------------*/
 params.modelFolder="$baseDir/data/models";
-//params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
+model=file("${params.modelFolder}");
 
-// Names of the file to be usedcd
-params.bam_definition=".bam";
-// If needed
-params.ref_name="ucsc.hg19.chr20.unittest.fasta";
-
-//OTHER PARAMETERS
+/*--------------------------------------------------
+  Regions
+---------------------------------------------------*/
 params.regions="chr20:10,000,000-10,010,000";
 
-//Number of cores in the Machine
+/*--------------------------------------------------
+  Cores of the machine --> used for process makeExamples
+---------------------------------------------------*/
 params.n_shards=1;
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
 
-//Name of the directory in which the vcf result will be stored
-params.nameOutput="${params.ref_name}";
-params.resultdir = "RESULTS-DeepVariant";
-params.outputdir="quickstart-output"
-params.log="./logs"
+/*--------------------------------------------------
+  Fasta related input files
+---------------------------------------------------*/
 
-//Files
-model=file("${params.modelFolder}");
-
-
-
-
-/*
-* Generating and/or parsing the bai, fai, fai.gz, ... needed for the makeExamples process.
-* Preprocessing bam files adding sample info if not contained
-*/
-
-params.bam_folder="/Users/luisasantus/DeepVariant/data/input";
-params.bai_folder="none";
 params.fasta="/Users/luisasantus/DeepVariant/data/input/ucsc.hg19.chr20.unittest.fasta";
 params.fai="none";
+params.fastagz="none";
+params.gzfai="none";
+params.gzi="none";
 
-fasta=file(params.fasta);
+fasta=file(params.fasta)
+fai=file(params.fai);
+fastagz=file(params.fastagz);
+gzfai=file(params.gzfai);
+gzi=file(params.gzi);
 
-bamChannel= Channel.fromPath("${params.bam_folder}/*.bam");
-bai_folder=Channel.fromPath("${params.bai_folder}/*.bai");
+/*--------------------------------------------------
+  Bam related input files
+---------------------------------------------------*/
+params.bam_folder="/Users/luisasantus/DeepVariant/data/input";
+params.getBai="false";
 
+if( !("false").equals(params.getBai)){
+  Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
+}else{
+  Channel.fromPath("${params.bam_folder}/*.bam").map{ file -> tuple(file.name, file) }.set{bamChannel}
+}
+
+/*--------------------------------------------------
+  Output directory
+---------------------------------------------------*/
+params.resultdir = "RESULTS-DeepVariant";
+
+/********************************************************************
+
+  process preprocessFASTA
+
+  Collects all the files related to the reference genome, like
+  .fai,.gz ...
+
+  If the user gives them as an input, they are used
+  If not they are produced in this process given only the fasta file.
+********************************************************************/
 
 
 process preprocessFASTA{
@@ -65,37 +80,52 @@ process preprocessFASTA{
 
   input:
   file fasta from fasta
+  file fai from fai
+  file fastagz from fastagz
+  file gzfai from gzfai
+  file gzi from gzi
 
   output:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi") into fastaChannel
 
   script:
   """
-  ## if not given --> cretae index for fasta file (fai)ls
-  [[ "${params.fai}" == "none" ]] && samtools faidx $fasta && bgzip -c -i ${fasta} > ${fasta}.gz && samtools faidx "${fasta}.gz"  || cp ${params.fai} .
+  [[ "${params.fai}" == "none" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
+  [[ "${params.fastagz}" == "none" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
+  [[ "${params.gzi}" == "none" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
+  [[ "${params.gzfai}" == "none" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
-
 }
+
+
+/********************************************************************
+
+  process preprocessBAM
+
+  If the user gives the index files for the bam files as an input, they are used
+  If not they are produced in this process given only the fasta file.
+
+  Moreover this takes care of the read group line too.
+********************************************************************/
 
 
 process preprocessBAM{
 
   container 'luisas/samtools'
-  publishDir "$baseDir/out"
-
 
   input:
-  file bam from bamChannel
+  set val(prefix), file(bam) from bamChannel
 
   output:
-  set file(bam), file("${bam}.bai") into completeChannel
+  set file("${bam[0]}"), file("${bam[0]}.bai") into completeChannel
+
 
   script:
   """
     ## if not bam files
-    [[ "${params.bai_folder}" == "none" ]] && samtools index $bam
+    [[ "${params.bai_folder}" == "none" ]] && samtools index ${bam[0]}
 
-    [[ `samtools view -H $bam | grep '@RG' | wc -l`   > 0 ]] || java -jar picard.jar AddOrReplaceReadGroups \
+    [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] || java -jar picard.jar AddOrReplaceReadGroups \
       I=$bam \
       O=$bam \
       RGID=4 \
@@ -104,43 +134,62 @@ process preprocessBAM{
       RGPU=unit1 \
       RGSM=20
   """
-
 }
 
 
 
-/*
-* Getting bam files and converting them to images ( named examples )
-*/
+fastaChannel.map{file -> tuple (1,file[0],file[1],file[2],file[3],file[4])}
+            .set{all_fa};
+
+completeChannel.map { file -> tuple(1,file[0],file[1]) }
+               .set{all_bam};
+
+all_fa.cross(all_bam)
+      .set{all_fa_bam};
+
+
+
+      /********************************************************************
+
+        process makeExamples
+
+        Getting bam files and converting them to images ( named examples )
+
+      ********************************************************************/
+
 process makeExamples{
 
   input:
-  set file(bam), file("${bam}.bai") from completeChannel
-  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi") from fastaChannel
-
+    set file(fasta), file(bam) from all_fa_bam
 
   output:
-  set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") into examples
+    set file("${fasta[1]}"),file("${fasta[1]}.fai"),file("${fasta[1]}.gz"),file("${fasta[1]}.gz.fai"), file("${fasta[1]}.gz.gzi"),val("${bam[1]}"), file("shardedExamples") into examples
 
-  script:
-  """
+  shell:
+  '''
     mkdir shardedExamples
 
-    time seq 0 $numberShardsMinusOne | \
+    time seq 0 !{numberShardsMinusOne} | \
     parallel --eta --halt 2 \
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
-      --ref "${fasta} "\
-      --reads "$bam" \
-      --regions "${params.regions}" \
-      --examples "shardedExamples/examples.tfrecord@${params.n_shards}.gz"\
+      --ref !{fasta[1]}\
+      --reads !{bam[1]} \
+      --regions !{params.regions} \
+      --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
       --task {}
-  """
+  '''
 }
 
-/*
-* Doing the variant calling based on the ML trained model.
-*/
+/********************************************************************
+
+  process call_variants
+
+  Doing the variant calling based on the ML trained model.
+
+********************************************************************/
+
+
 
 process call_variants{
 
@@ -161,9 +210,16 @@ process call_variants{
 
 }
 
-/*
-* Trasforming the variant calling output (tfrecord file) into a standard vcf file.
-*/
+
+
+/********************************************************************
+
+  process call_variants
+
+  Trasforming the variant calling output (tfrecord file) into a standard vcf file.
+
+********************************************************************/
+
 process postprocess_variants{
 
   publishDir params.resultdir, mode: 'copy'
@@ -172,14 +228,14 @@ process postprocess_variants{
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam),file('call_variants_output.tfrecord') from called_variants
 
   output:
-   set val(bam),file("$bam--${params.ref_name}.vcf") into postout
+   set val(bam),file("${bam}.vcf") into postout
 
   script:
   """
     /opt/deepvariant/bin/postprocess_variants \
     --ref "${fasta}.gz" \
     --infile call_variants_output.tfrecord \
-    --outfile "$bam--${params.ref_name}.vcf"
+    --outfile "${bam}.vcf"
   """
 }
 
