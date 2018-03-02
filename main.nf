@@ -12,7 +12,8 @@ import java.util.List;
   Content: trained model.
   For exact information refer to documentation.
 ---------------------------------------------------*/
-params.modelFolder="$baseDir/data/models";
+//params.modelFolder="$baseDir/data/models";
+params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 model=file("${params.modelFolder}");
 
@@ -24,7 +25,7 @@ params.regions="chr20:10,000,000-10,010,000";
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
 ---------------------------------------------------*/
-params.n_shards=1;
+params.n_shards=2;
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
@@ -33,11 +34,11 @@ shardsChannel= Channel.from( 0..params.n_shards);
   Fasta related input files
 ---------------------------------------------------*/
 
-params.fasta="/Users/luisasantus/DeepVariant/data/input/ucsc.hg19.chr20.unittest.fasta";
-params.fai="none";
-params.fastagz="none";
-params.gzfai="none";
-params.gzi="none";
+params.fasta="$baseDir/data/GRCh38.p10.genome.fasta";
+params.fai="nofai";
+params.fastagz="nofastagz";
+params.gzfai="nogzfai";
+params.gzi="nogzi";
 
 fasta=file(params.fasta)
 fai=file(params.fai);
@@ -48,7 +49,7 @@ gzi=file(params.gzi);
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
-params.bam_folder="/Users/luisasantus/DeepVariant/data/input";
+params.bam_folder="$baseDir/data";
 params.getBai="false";
 
 if( !("false").equals(params.getBai)){
@@ -77,7 +78,8 @@ params.resultdir = "RESULTS-DeepVariant";
 process preprocessFASTA{
 
   container 'luisas/samtools'
-
+  publishDir "$baseDir/sampleDerivatives"
+	 
   input:
   file fasta from fasta
   file fai from fai
@@ -90,10 +92,12 @@ process preprocessFASTA{
 
   script:
   """
-  [[ "${params.fai}" == "none" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
-  [[ "${params.fastagz}" == "none" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
-  [[ "${params.gzi}" == "none" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
-  [[ "${params.gzfai}" == "none" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
+  [[ "${params.fai}" == "nofai" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
+	echo "HERE"	 
+ [[ "${params.fastagz}" == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
+  	echo "EVEN GOT HERE"
+  [[ "${params.gzi}" == "nogzi" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
+  [[ "${params.gzfai}" == "nogzfai" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
 }
 
@@ -112,6 +116,7 @@ process preprocessFASTA{
 process preprocessBAM{
 
   container 'luisas/samtools'
+  publishDir "$baseDir/sampleDerivatives"
 
   input:
   set val(prefix), file(bam) from bamChannel
@@ -123,7 +128,7 @@ process preprocessBAM{
   script:
   """
     ## if not bam files
-    [[ "${params.bai_folder}" == "none" ]] && samtools index ${bam[0]}
+    [[ "${params.getBai}" == "false" ]] && samtools index ${bam[0]}
 
     [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] || java -jar picard.jar AddOrReplaceReadGroups \
       I=$bam \
