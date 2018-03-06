@@ -89,6 +89,9 @@ ucsc.hg19.chr20.unittest.fasta
 
 All the BAM files on which the variant calling should be performed should be all stored in the same folder. If you already have the index files (BAI) they should be stored in the same folder and called with the same prefix as the correspoding BAM file ( e.g. file.bam and file.bam.bai ). 
 
+**!** ### TIP  
+All the input files can be used in s3 buckets too and the s3://path/to/files/in/bucket can be used instead of a local path.
+
 
 - ### REGIONS
 
@@ -113,7 +116,20 @@ By default 2 cores are used.
 - ### MODEL 
 
 The trained model which is used by the **call_variants** process can be changed.
-The default one is 
+The default one is the 0.5.0 Version for the whole genome ( not exome!). So if that is what you want to use too, nothing needs to be changed.
+
+
+```
+--modelFolder "s3://deepvariant-test/models"
+--modelName   "model.ckpt"
+```
+The modelName parameter describes the name of the model that should be used among the ones found in the folder defined by the parameter modelFolder.  The model folder must contain 3 files, the list of which looks like this:
+
+```
+model.ckpt.data-00000-of-00001
+model.ckpt.index
+model.ckpt.meta
+```
 
 
 
