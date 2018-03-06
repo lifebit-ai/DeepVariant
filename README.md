@@ -87,39 +87,38 @@ ucsc.hg19.chr20.unittest.fasta
 --getBai "true"                                               OPTIONAL  (default: "false")
 ```
 
-------------------
-In the following lines an overview on how DeepVariants parameters from DeepVariant are called in this Nextflow Pipeline.
-
-- **params.input** folder which contains all the needed files as input ( BAM, BAI, FASTA etc)
-    Here an exact example of which file should be contained: 
-    
-    * Example of content:
-     NA12878_S1.chr20.10_10p1mb.bam			ucsc.hg19.chr20.unittest.fasta
-     NA12878_S1.chr20.10_10p1mb.bam.bai		ucsc.hg19.chr20.unittest.fasta.fai
-     test_nist.b37_chr20_100kbp_at_10mb.bed		ucsc.hg19.chr20.unittest.fasta.gz
-     test_nist.b37_chr20_100kbp_at_10mb.vcf.gz	ucsc.hg19.chr20.unittest.fasta.gz.fai
-     test_nist.b37_chr20_100kbp_at_10mb.vcf.gz.tbi	ucsc.hg19.chr20.unittest.fasta.gz.gzi
+All the BAM files on which the variant calling should be performed should be all stored in the same folder. If you already have the index files (BAI) they should be stored in the same folder and called with the same prefix as the correspoding BAM file ( e.g. file.bam and file.bam.bai ). 
 
 
-- **params.modelFolder** folder which contains all files for the prediction model 
-    * Example of content:
-    model.ckpt.data-00000-of-00001	model.ckpt.index		model.ckpt.meta
-    
-- **params.modelName** name of the model to be used contained in the modelFolder 
-    * Example :
-    model.ckpt
-    
-- **params.bam_name** name of the bam file from the input folder to be used.
-    * Example : 
-    params.bam_name="NA12878_S1.chr20.10_10p1mb.bam";
-    
-- **params.ref_name** name of the reference fasta genome from the input folder to be used. 
-    * Example : 
-    params.ref_name="ucsc.hg19.chr20.unittest.fasta";
-    
-- **params.regions** regions which need to be analyzed. 
-    * Example: 
-    params.regions="chr20:10,000,000-10,010,000";
+- ### REGIONS
+
+```
+--regions chr20                            all of chromosome 20
+--regions chr20:10,000,000-11,000,000      10-11mb of chr20
+--regions "chr20 chr21"                    chromosomes 20 and 21
+```
+
+You can refer to (here)[https://github.com/google/deepvariant/blob/r0.5/docs/deepvariant-details.md] to get an exact overview of the parameter regions, which is used exactly used as it is in the standard version of DeepVariant.
+
+
+
+- ### SHARDS 
+
+The **make_example** process can be internally parallelized and it can be defined how many cores should be assigned to this process.
+By default 2 cores are used.
+
+```
+--n_shards 2          OPTIONAL (default: 2)
+```
+- ### MODEL 
+
+The trained model which is used by the **call_variants** process can be changed.
+The default one is 
+
+
+
+
+
 
 
 
