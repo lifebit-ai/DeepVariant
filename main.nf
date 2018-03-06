@@ -34,11 +34,11 @@ shardsChannel= Channel.from( 0..params.n_shards);
   Fasta related input files
 ---------------------------------------------------*/
 
-params.fasta="$baseDir/data/GRCh38.p10.genome.fasta";
-params.fai="nofai";
-params.fastagz="nofastagz";
-params.gzfai="nogzfai";
-params.gzi="nogzi";
+params.fasta="./data/hg19.fa";
+params.fai="./data/hg19.fa.fai";
+params.fastagz="./data/hg19.fa.gz";
+params.gzfai="./data/hg19.fa.gz.fai";
+params.gzi="./data/hg19.fa.gz.gzi";
 
 fasta=file(params.fasta)
 fai=file(params.fai);
@@ -130,7 +130,7 @@ process preprocessBAM{
     ## if not bam files
     [[ "${params.getBai}" == "false" ]] && samtools index ${bam[0]}
 
-    [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] || java -jar picard.jar AddOrReplaceReadGroups \
+    [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] || java -jar /picard.jar AddOrReplaceReadGroups \
       I=$bam \
       O=$bam \
       RGID=4 \
@@ -179,8 +179,8 @@ process makeExamples{
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
       --ref !{fasta[1]}\
-      --reads !{bam[1]} \
       --regions !{params.regions} \
+      --reads !{bam[1]} \
       --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
       --task {}
   '''
