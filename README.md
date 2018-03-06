@@ -37,11 +37,11 @@ The input of the pipeline can be eventually changed as explained in the "Input p
 
 ## The workflow 
 
-As shown in the following picture, the worklow both contains preprocessing steps ( light blue ones ) and proper variant calling steps ( darker blue ones ).
+As shown in the following picture, the worklow both contains **preprocessing steps** ( light blue ones ) and proper **variant calling steps** ( darker blue ones ).
 
-Some input files ar optional and if not given, they will be automatically created for the user during the preprocessign steps. If these are given, the preprocessing steps are skipped. For more information about preprocessing, please refer to the "INPUT PARAMETERS" section.
+Some input files ar optional and if not given, they will be automatically created for the user during the preprocessing steps. If these are given, the preprocessing steps are skipped. For more information about preprocessing, please refer to the "INPUT PARAMETERS" section.
 
-The worklow accepts one reference genome and multiple BAM files as input. The variant calling for the several input BAM files will be processed completely indipendently and will produce indipendent VCF result files. The advantage of this approach is that the variant calling of the different BAM files can be parallelized internally by Nextflow and take advantage of all the cores of the machine in order to get the results at the fastest.
+The worklow **accepts one reference genome and multiple BAM files as input**. The variant calling for the several input BAM files will be processed completely indipendently and will produce indipendent VCF result files. The advantage of this approach is that the variant calling of the different BAM files can be parallelized internally by Nextflow and take advantage of all the cores of the machine in order to get the results at the fastest.
 
 
 <p align="center">
@@ -54,16 +54,16 @@ The worklow accepts one reference genome and multiple BAM files as input. The va
 
 DeepVariant, in order to run at its fastest, requires some indexed and compressed versions of both the reference genome and the BAM files. With DeepVariant in Nextflow, if you wish, you can only use as an input the fasta and the BAM file and let us do the work for you in a clean and standarized way (standard tools like [samtools](http://samtools.sourceforge.net/) are used for indexing and every step is run inside of  a Docker container).
 
-This is how the input files that are needed as input 
+This is how the list of the needed input files looks like. If these are passed all as input parameters, the preprocessing steps will be skipped. 
 ```
 NA12878_S1.chr20.10_10p1mb.bam   NA12878_S1.chr20.10_10p1mb.bam.bai	
 ucsc.hg19.chr20.unittest.fasta   ucsc.hg19.chr20.unittest.fasta.fai 
 ucsc.hg19.chr20.unittest.fasta.gz  ucsc.hg19.chr20.unittest.fasta.gz.fai   ucsc.hg19.chr20.unittest.fasta.gz.gzi
 
 ```
-If you do not have all of them, these are the file you can give as input to the Nextflow pipeline, and the rest will be produced for you.
+If you do not have all of them, these are the file you can give as input to the Nextflow pipeline, and the rest will be automatically  produced for you.
 ```
-NA12878_S1.chr20.10_10p1mb.bam  
+NA12878_S1.chr20.10_10p1b.bam  
 ucsc.hg19.chr20.unittest.fasta
 ```
 
@@ -71,7 +71,21 @@ ucsc.hg19.chr20.unittest.fasta
 
 - ### REFERENCE GENOME
 
+  ```
+  --fasta "/path/to/myGenome.fa"                REQUIRED
+  --fai   "/path/to/myGenome.fa.fai"            OPTIONAL
+  --fastagz "/path/to/myGenome.fa.gz"           OPTIONAL
+  -gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
+  -gzi  "/path/to/myGenome.fa"                  OPTIONAL
+  ```
 
+
+- ### BAM FILES 
+
+```
+--bam_folder "/path/to/folder/where/bam/files/are"            REQUIRED
+--getBai "true"                                               OPTIONAL  (default: "false")
+```
 
 ------------------
 In the following lines an overview on how DeepVariants parameters from DeepVariant are called in this Nextflow Pipeline.
