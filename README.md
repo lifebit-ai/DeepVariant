@@ -37,7 +37,11 @@ The input of the pipeline can be eventually changed as explained in the "Input p
 
 ## The workflow 
 
+As shown in the following picture, the worklow both contains preprocessing steps ( light blue ones ) and proper variant calling steps ( darker blue ones ).
 
+Some input files ar optional and if not given, they will be automatically created for the user during the preprocessign steps. If these are given, the preprocessing steps are skipped. For more information about preprocessing, please refer to the "INPUT PARAMETERS" section.
+
+The worklow accepts one reference genome and multiple BAM files as input. The variant calling for the several input BAM files will be processed completely indipendently and will produce indipendent VCF result files. The advantage of this approach is that the variant calling of the different BAM files can be parallelized internally by Nextflow and take advantage of all the cores of the machine in order to get the results at the fastest.
 
 
 <p align="center">
