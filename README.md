@@ -8,13 +8,10 @@ The Google Brain Team in December 2017 released a [Variant Caller](https://www.e
 
 In practice, DeepVariant first builds images based on the BAM file, then it uses a DeepLearning image recognition approach to obtain the variants and eventually it converts the output of the prediction in the standard VCF format. 
 
-
-WHY NEXTFLOW?
-Preprocessing embedded
-Parallelization 
-Easy control 
-Containerization 
-
+DeepVariant as a Nextflow pipeline provides several advantages to the users. It handles automatically, through **preprocessing steps**, the creation of some extra needed indexed and compressed files which are a necessary input for DeepVariant, and which should normally manually be produced by the users.
+Variant Calling can be performed at the same time on **multiple BAM files** and thanks to the internal parallelization of Nextflow no resources are wasted.
+Nextflow's support of Docker allows to produce the results in a computational reproducible and clean way by running every step inside of a **Docker container**.
+Moreover, you can easily run DeepVariant as a Nextflow pipeline in the **cloud** and let Nextflow do the hard work for you.
 
 For more detailed information about DeepVariant please refer to: 
 https://github.com/google/deepvariant
@@ -67,7 +64,7 @@ NA12878_S1.chr20.10_10p1b.bam
 ucsc.hg19.chr20.unittest.fasta
 ```
 
-### PARAMETERS DEFINITION 
+### Parameters definition 
 
 - ### REFERENCE GENOME
 
@@ -78,7 +75,7 @@ ucsc.hg19.chr20.unittest.fasta
   -gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
   -gzi  "/path/to/myGenome.fa"                  OPTIONAL
   ```
-
+If the optional parameters are not passed, they will be automatically be produced for you and you will be able to find them in the "preprocessingOUTPUT" folder.
 
 - ### BAM FILES 
 
@@ -89,7 +86,7 @@ ucsc.hg19.chr20.unittest.fasta
 
 All the BAM files on which the variant calling should be performed should be all stored in the same folder. If you already have the index files (BAI) they should be stored in the same folder and called with the same prefix as the correspoding BAM file ( e.g. file.bam and file.bam.bai ). 
 
-**!** ### TIP  
+**! TIP** 
 All the input files can be used in s3 buckets too and the s3://path/to/files/in/bucket can be used instead of a local path.
 
 
@@ -101,7 +98,7 @@ All the input files can be used in s3 buckets too and the s3://path/to/files/in/
 --regions "chr20 chr21"                    chromosomes 20 and 21
 ```
 
-You can refer to (here)[https://github.com/google/deepvariant/blob/r0.5/docs/deepvariant-details.md] to get an exact overview of the parameter regions, which is used exactly used as it is in the standard version of DeepVariant.
+You can refer to [here](https://github.com/google/deepvariant/blob/r0.5/docs/deepvariant-details.md) to get an exact overview of the parameter regions, which is used exactly used as it is in the standard version of DeepVariant.
 
 
 
