@@ -34,10 +34,10 @@ shardsChannel= Channel.from( 0..params.n_shards);
 ---------------------------------------------------*/
 
 params.fasta="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta";
-params.fai="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.fai";
-params.fastagz="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz";
-params.gzfai="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.fai";
-params.gzi="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.gzi";
+params.fai="nofai";
+params.fastagz="nofastagz";
+params.gzfai="nogzfai";
+params.gzi="nogzi";
 
 fasta=file(params.fasta)
 fai=file(params.fai);
@@ -48,7 +48,7 @@ gzi=file(params.gzi);
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
-params.bam_folder="$baseDir/data";
+params.bam_folder="s3://deepvariant-test/input/";
 params.getBai="false";
 
 if( !("false").equals(params.getBai)){
