@@ -34,10 +34,10 @@ shardsChannel= Channel.from( 0..params.n_shards);
 ---------------------------------------------------*/
 
 params.fasta="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta";
-params.fai=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.fai";
-params.fastagz=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz";
-params.gzfai=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.fai";
-params.gzi=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.gzi";
+params.fai="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.fai";
+params.fastagz="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz";
+params.gzfai="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.fai";
+params.gzi="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.gzi";
 
 fasta=file(params.fasta)
 fai=file(params.fai);
