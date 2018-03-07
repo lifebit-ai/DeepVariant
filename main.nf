@@ -12,7 +12,6 @@ import java.util.List;
   Content: trained model.
   For exact information refer to documentation.
 ---------------------------------------------------*/
-//params.modelFolder="$baseDir/data/models";
 params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 model=file("${params.modelFolder}");
@@ -34,11 +33,11 @@ shardsChannel= Channel.from( 0..params.n_shards);
   Fasta related input files
 ---------------------------------------------------*/
 
-params.fasta="./data/hg19.fa";
-params.fai="./data/hg19.fa.fai";
-params.fastagz="./data/hg19.fa.gz";
-params.gzfai="./data/hg19.fa.gz.fai";
-params.gzi="./data/hg19.fa.gz.gzi";
+params.fasta="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta";
+params.fai=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.fai";
+params.fastagz=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz";
+params.gzfai=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.fai";
+params.gzi=""s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta.gz.gzi";
 
 fasta=file(params.fasta)
 fai=file(params.fai);
@@ -93,9 +92,7 @@ process preprocessFASTA{
   script:
   """
   [[ "${params.fai}" == "nofai" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
-	echo "HERE"	 
- [[ "${params.fastagz}" == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
-  	echo "EVEN GOT HERE"
+  [[ "${params.fastagz}" == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
   [[ "${params.gzi}" == "nogzi" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
   [[ "${params.gzfai}" == "nogzfai" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
