@@ -16,10 +16,6 @@ params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
 model=file("${params.modelFolder}");
 
-/*--------------------------------------------------
-  Regions
----------------------------------------------------*/
-params.regions="";
 
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
@@ -33,17 +29,43 @@ shardsChannel= Channel.from( 0..params.n_shards);
   Fasta related input files
 ---------------------------------------------------*/
 
-params.fasta="s3://deepvariant-test/input/ucsc.hg19.chr20.unittest.fasta";
+params.fasta="nofasta";
 params.fai="nofai";
 params.fastagz="nofastagz";
 params.gzfai="nogzfai";
 params.gzi="nogzi";
 
-fasta=file(params.fasta)
-fai=file(params.fai);
-fastagz=file(params.fastagz);
-gzfai=file(params.gzfai);
-gzi=file(params.gzi);
+
+params.hg19="";
+params.h38="";
+
+if(params.hg19){
+  fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
+  fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
+  fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
+  gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
+  gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
+}
+else if(params.h38){
+  fasta=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa");
+  fai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.fai");
+  fastagz=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz");
+  gzfai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.fai");
+  gzi=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.gzi");
+}
+else{
+  fasta=file(params.fasta)
+  fai=file(params.fai);
+  fastagz=file(params.fastagz);
+  gzfai=file(params.gzfai);
+  gzi=file(params.gzi);
+}
+
+if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
+  System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
+  System.exit(0);
+}
+
 
 /*--------------------------------------------------
   Bam related input files
@@ -135,8 +157,8 @@ process preprocessBAM{
     RGPU=unit1 \
     RGSM=20; cd ready ;samtools index ${bam[0]}; }
 
-   
-	
+
+
   """
 }
 
