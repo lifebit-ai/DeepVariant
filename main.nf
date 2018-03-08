@@ -78,7 +78,7 @@ process preprocessFASTA{
 
   container 'luisas/samtools'
   publishDir "$baseDir/sampleDerivatives"
-	 
+
   input:
   file fasta from fasta
   file fai from fai
@@ -119,22 +119,32 @@ process preprocessBAM{
   set val(prefix), file(bam) from bamChannel
 
   output:
-  set file("${bam[0]}"), file("${bam[0]}.bai") into completeChannel
+  set file("ready/${bam[0]}"), file("ready/${bam[0]}.bai") into completeChannel
 
 
   script:
   """
-    ## if not bam files
-    [[ "${params.getBai}" == "false" ]] && samtools index ${bam[0]}
+    mkdir ready
 
-    [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] || java -jar /picard.jar AddOrReplaceReadGroups \
-      I=$bam \
-      O=$bam \
-      RGID=4 \
-      RGLB=lib1 \
-      RGPL=illumina \
-      RGPU=unit1 \
-      RGSM=20
+    if [ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]; then
+      mv $bam ready
+      if [ "${params.getBai}" == "false" ]; then
+         samtools index "ready/${bam[0]}"
+      fi
+    else
+      java -jar /picard.jar AddOrReplaceReadGroups \
+        I="${bam[0]}" \
+        O="ready/${bam[0]} \
+        RGID=4 \
+        RGLB=lib1 \
+        RGPL=illumina \
+        RGPU=unit1 \
+        RGSM=20 ;
+      samtools index "ready/${bam[0]}"
+
+    fi
+  
+
   """
 }
 
