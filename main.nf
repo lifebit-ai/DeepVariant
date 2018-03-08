@@ -126,16 +126,17 @@ process preprocessBAM{
   """
 	  mkdir ready
 
-  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && mv $bam ready || java -jar /picard.jar AddOrReplaceReadGroups \
+  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready; cd ready; [[ "${params.getBai}" == "false" ]] && samtools index ${bam[0]}; }|| { java -jar /picard.jar AddOrReplaceReadGroups \
     I=${bam[0]} \
     O=ready/${bam[0]} \
     RGID=4 \
     RGLB=lib1 \
     RGPL=illumina \
     RGPU=unit1 \
-    RGSM=20
+    RGSM=20; cd ready ;samtools index ${bam[0]}; }
 
-  [[ "${params.getBai}" == "false" ]] && samtools index ready/${bam[0]}
+   
+	
   """
 }
 
