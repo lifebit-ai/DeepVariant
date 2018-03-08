@@ -19,7 +19,7 @@ model=file("${params.modelFolder}");
 /*--------------------------------------------------
   Regions
 ---------------------------------------------------*/
-params.regions="chr20:10,000,000-10,010,000";
+params.regions="";
 
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
@@ -178,7 +178,6 @@ process makeExamples{
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
       --ref !{fasta[1]}\
-      --regions !{params.regions} \
       --reads !{bam[1]} \
       --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
       --task {}
