@@ -124,27 +124,18 @@ process preprocessBAM{
 
   script:
   """
-    mkdir ready
+	  mkdir ready
 
-    if [ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]; then
-      mv $bam ready
-      if [ "${params.getBai}" == "false" ]; then
-         samtools index "ready/${bam[0]}"
-      fi
-    else
-      java -jar /picard.jar AddOrReplaceReadGroups \
-        I="${bam[0]}" \
-        O="ready/${bam[0]} \
-        RGID=4 \
-        RGLB=lib1 \
-        RGPL=illumina \
-        RGPU=unit1 \
-        RGSM=20 ;
-      samtools index "ready/${bam[0]}"
+  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && mv $bam ready || java -jar /picard.jar AddOrReplaceReadGroups \
+    I=${bam[0]} \
+    O=ready/${bam[0]} \
+    RGID=4 \
+    RGLB=lib1 \
+    RGPL=illumina \
+    RGPU=unit1 \
+    RGSM=20
 
-    fi
-  
-
+  [[ "${params.getBai}" == "false" ]] && samtools index ready/${bam[0]}
   """
 }
 
