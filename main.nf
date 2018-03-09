@@ -75,7 +75,7 @@ gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
   Bam related input files
 ---------------------------------------------------*/
 params.bam_folder="s3://deepvariant-test/input/";
-params.getBai="false";
+params.getBai="true";
 
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
@@ -152,7 +152,7 @@ process preprocessBAM{
   """
 	  mkdir ready
 
-  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready; cd ready; [[ "${params.getBai}" == "false" ]] && samtools index ${bam[0]}; }|| { java -jar /picard.jar AddOrReplaceReadGroups \
+  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready; cd ready;  }|| { java -jar /picard.jar AddOrReplaceReadGroups \
     I=${bam[0]} \
     O=ready/${bam[0]} \
     RGID=4 \
