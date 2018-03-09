@@ -75,7 +75,7 @@ gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
   Bam related input files
 ---------------------------------------------------*/
 params.bam_folder="s3://deepvariant-test/input/";
-params.getBai="false";
+params.getBai="true";
 
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
