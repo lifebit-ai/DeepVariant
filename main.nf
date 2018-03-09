@@ -74,7 +74,8 @@ gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
-params.bam_folder="s3://deepvariant-test/input/";
+params.bamFolder="";
+params.bam_folder="s3://deepvariant-data/test-bam/hg19-mediumMultiple/";
 params.getBai="true";
 
 if( !("false").equals(params.getBai)){
