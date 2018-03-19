@@ -11,6 +11,7 @@ import java.util.List;
   Model folder
   Content: trained model.
   For exact information refer to documentation.
+  Can be substitued with own model folder.
 ---------------------------------------------------*/
 params.modelFolder="s3://deepvariant-test/models"
 params.modelName="model.ckpt";
@@ -27,6 +28,18 @@ shardsChannel= Channel.from( 0..params.n_shards);
 
 /*--------------------------------------------------
   Fasta related input files
+  
+  You can use the flag --hg19 for using the hg19 version of the Genome.
+  You can use the flag --h38 for using the GRCh38.p10 version of the Genome.
+  
+  They can be passed manually, through the parameter:
+  	params.fasta="/my/path/to/file";
+  And if already at user's disposal: 
+	params.fai="/my/path/to/file";
+	params.fastagz="/my/path/to/file";
+	params.gzfai="/my/path/to/file";
+	params.gzi="/my/path/to/file";
+	
 ---------------------------------------------------*/
 
 params.fasta="nofasta";
@@ -35,42 +48,42 @@ params.fastagz="nofastagz";
 params.gzfai="nogzfai";
 params.gzi="nogzi";
 
-//
-// params.hg19="";
-// params.h38="";
-//
-// if(params.hg19){
-//   fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
-//   fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
-//   fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
-//   gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
-//   gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
-// }
-// else if(params.h38){
-//   fasta=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa");
-//   fai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.fai");
-//   fastagz=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz");
-//   gzfai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.fai");
-//   gzi=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.gzi");
-// }
-// else{
-//   fasta=file(params.fasta)
-//   fai=file(params.fai);
-//   fastagz=file(params.fastagz);
-//   gzfai=file(params.gzfai);
-//   gzi=file(params.gzi);
-// }
-//
-// if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
-//   System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
-//   System.exit(0);
-// }
 
-fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
-fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
-fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
-gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
-gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
+ params.hg19="";
+ params.h38="";
+
+ if(params.hg19){
+   fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
+   fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
+   fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
+   gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
+   gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
+ }
+ else if(params.h38){
+   fasta=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa");
+   fai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.fai");
+   fastagz=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz");
+   gzfai=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.fai");
+   gzi=file("s3://deepvariant-data/genomes/hg38/GRCh38.p10.genome.fa.gz.gzi");
+ }
+ else{
+   fasta=file(params.fasta)
+   fai=file(params.fai);
+   fastagz=file(params.fastagz);
+   gzfai=file(params.gzfai);
+   gzi=file(params.gzi);
+ }
+ 
+ if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
+   System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
+   System.exit(0);
+ }
+
+//fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
+//fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
+//fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
+//gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
+//gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
@@ -183,6 +196,9 @@ all_fa.cross(all_bam)
         process makeExamples
 
         Getting bam files and converting them to images ( named examples )
+	
+	Can be parallelized through the params.n_shards 
+	( if params.n_shards >= 1 parallelization happens automatically) 
 
       ********************************************************************/
 
