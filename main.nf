@@ -13,7 +13,7 @@ import java.util.List;
   For exact information refer to documentation.
   Can be substitued with own model folder.
 ---------------------------------------------------*/
-params.modelFolder="s3://deepvariant-test/models"
+params.modelFolder="s3://deepvariant-data/models"
 params.modelName="model.ckpt";
 model=file("${params.modelFolder}");
 
