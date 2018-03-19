@@ -89,7 +89,7 @@ params.gzi="nogzi";
 ---------------------------------------------------*/
 params.bamFolder="";
 params.bam_folder="s3://deepvariant-data/test-bam/hg19-mediumMultiple/";
-params.getBai="true";
+params.getBai="false";
 
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
