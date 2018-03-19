@@ -68,6 +68,16 @@ ucsc.hg19.chr20.unittest.fasta
 
 - ### REFERENCE GENOME
 
+ Two standard version of the genome ( hg19 and GRCh38.p10 ) are prepared with all their compressed and indexed file in a lifebit s3      bucket.
+ They can be used by using one of the flags:
+ 
+ ```
+ --hg19
+ --h38
+ ```
+ 
+ Alternatively, a user can use an own reference genome version, by using the following parameters:
+
   ```
   --fasta "/path/to/myGenome.fa"                REQUIRED
   --fai   "/path/to/myGenome.fa.fai"            OPTIONAL
