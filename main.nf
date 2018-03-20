@@ -105,6 +105,7 @@ if( !("false").equals(params.getBai)){
 params.RGID=4;
 params.RGLB="lib1";
 params.RGPL="illumina"
+params.RGPU="default"
 params.RGSM=20;
 
 
@@ -184,7 +185,7 @@ process preprocessBAM{
     RGLB=${params.RGLB} \
     RGPL=${params.RGPL} \
     RGPU=${params.RGPU} \
-    RGSM=20; cd ready ;samtools index ${bam[0]}; }
+    RGSM=${params.RGSM}; cd ready ;samtools index ${bam[0]}; }
 
   """
 }
