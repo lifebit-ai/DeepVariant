@@ -21,7 +21,7 @@ model=file("${params.modelFolder}");
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
 ---------------------------------------------------*/
-params.n_shards=64
+params.n_shards=2
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
