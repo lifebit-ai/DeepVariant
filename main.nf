@@ -97,6 +97,17 @@ if( !("false").equals(params.getBai)){
   Channel.fromPath("${params.bam_folder}/*.bam").map{ file -> tuple(file.name, file) }.set{bamChannel}
 }
 
+
+/*--------------------------------------------------
+  Parameters for adding @RG line
+---------------------------------------------------*/
+
+params.RGID=4;
+params.RGLB="lib1";
+params.RGPL="illumina"
+params.RGSM=20;
+
+
 /*--------------------------------------------------
   Output directory
 ---------------------------------------------------*/
@@ -169,10 +180,10 @@ process preprocessBAM{
   [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready; cd ready;  }|| { java -jar /picard.jar AddOrReplaceReadGroups \
     I=${bam[0]} \
     O=ready/${bam[0]} \
-    RGID=4 \
-    RGLB=lib1 \
-    RGPL=illumina \
-    RGPU=unit1 \
+    RGID=${params.RGID} \
+    RGLB=${params.RGLB} \
+    RGPL=${params.RGPL} \
+    RGPU=${params.RGPU} \
     RGSM=20; cd ready ;samtools index ${bam[0]}; }
 
   """
@@ -218,7 +229,7 @@ process makeExamples{
     parallel --eta --halt 2 \
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
-      --ref !{fasta[1]}\
+      --ref !{fasta[1].gz}\
       --reads !{bam[1]} \
       --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
       --task {}
