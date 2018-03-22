@@ -41,6 +41,8 @@ shardsChannel= Channel.from( 0..params.n_shards);
 	params.gzi="/my/path/to/file";
 	
 ---------------------------------------------------*/
+params.rgid=4;
+
 
 params.fasta="nofasta";
 params.fai="nofai";
@@ -139,6 +141,10 @@ process preprocessFASTA{
   Moreover this takes care of the read group line too.
 ********************************************************************/
 
+params.rglb="lib1";
+params.rgpl="illumina";
+params.rgpu="unit1";
+params.rgsm=20;
 
 process preprocessBAM{
   container 'luisas/samtools'
@@ -153,11 +159,11 @@ process preprocessBAM{
   [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready; cd ready;  }|| { java -jar /picard.jar AddOrReplaceReadGroups \
     I=${bam[0]} \
     O=ready/${bam[0]} \
-    RGID=4 \
-    RGLB=lib1 \
-    RGPL=illumina \
-    RGPU=unit1 \
-    RGSM=20; cd ready ;samtools index ${bam[0]}; }
+    RGID=${params.rgid} \
+    RGLB=${params.rglb} \
+    RGPL=${params.rgpl} \
+    RGPU=${params.rgpu} \
+    RGSM=${params.rgsm}; cd ready ;samtools index ${bam[0]}; }
   """
 }
 
@@ -194,7 +200,7 @@ process makeExamples{
     parallel --eta --halt 2 \
       python /opt/deepvariant/bin/make_examples.zip \
       --mode calling \
-      --ref !{fasta[1]}\
+      --ref !{fasta[1]}.gz\
       --reads !{bam[1]} \
       --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
       --task {}
