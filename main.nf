@@ -197,6 +197,9 @@ all_fa.cross(all_bam)
       ********************************************************************/
 
 process makeExamples{
+
+  cpus params.n_shards
+  
   input:
     set file(fasta), file(bam) from all_fa_bam
   output:
