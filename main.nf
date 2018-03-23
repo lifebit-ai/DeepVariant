@@ -20,8 +20,9 @@ model=file("${params.modelFolder}");
 
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
+  default:2
 ---------------------------------------------------*/
-params.n_shards=64
+params.n_shards=2
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
@@ -41,7 +42,7 @@ shardsChannel= Channel.from( 0..params.n_shards);
 	params.gzi="/my/path/to/file";
 	
 ---------------------------------------------------*/
-params.rgid=4;
+
 
 
 params.fasta="nofasta";
@@ -104,6 +105,19 @@ if( !("false").equals(params.getBai)){
 ---------------------------------------------------*/
 params.resultdir = "RESULTS-DeepVariant";
 
+/*--------------------------------------------------
+  Params for the Read Group Line to be added just in 
+  case its needed.
+  If not given, default values are used.
+---------------------------------------------------*/
+params.rgid=4;
+params.rglb="lib1";
+params.rgpl="illumina";
+params.rgpu="unit1";
+params.rgsm=20;
+
+
+
 /********************************************************************
   process preprocessFASTA
   Collects all the files related to the reference genome, like
@@ -141,10 +155,6 @@ process preprocessFASTA{
   Moreover this takes care of the read group line too.
 ********************************************************************/
 
-params.rglb="lib1";
-params.rgpl="illumina";
-params.rgpu="unit1";
-params.rgsm=20;
 
 process preprocessBAM{
   container 'luisas/samtools'
