@@ -82,11 +82,7 @@ params.gzi="nogzi";
    System.exit(0);
  }
 
-//fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
-//fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
-//fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
-//gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
-//gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
+
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
@@ -128,6 +124,7 @@ params.rgsm=20;
 
 
 process preprocessFASTA{
+  
   container 'luisas/samtools'
   publishDir "$baseDir/sampleDerivatives"
   input:
@@ -157,6 +154,7 @@ process preprocessFASTA{
 
 
 process preprocessBAM{
+  
   container 'luisas/samtools'
   publishDir "$baseDir/sampleDerivatives"
   input:
