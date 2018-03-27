@@ -22,7 +22,7 @@ model=file("${params.modelFolder}");
   Cores of the machine --> used for process makeExamples
   default:2
 ---------------------------------------------------*/
-params.n_shards=2
+params.n_shards=64
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
@@ -86,9 +86,9 @@ params.gzi="nogzi";
 /*--------------------------------------------------
   Bam related input files
 ---------------------------------------------------*/
-params.bamFolder="";
+
 params.bam_folder="s3://deepvariant-data/test-bam/hg19-mediumMultiple/";
-params.getBai="false";
+params.getBai="true";
 
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
