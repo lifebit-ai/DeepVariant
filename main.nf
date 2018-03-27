@@ -83,10 +83,10 @@ params.gzi="nogzi";
   // gzi=file(params.gzi);
 // }
  
- if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
-   System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
-   System.exit(0);
- }
+// if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
+ //  System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
+ //  System.exit(0);
+// }
 
 
 /*--------------------------------------------------
