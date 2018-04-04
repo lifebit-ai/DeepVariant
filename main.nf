@@ -22,7 +22,11 @@ model=file("${params.modelFolder}");
   Cores of the machine --> used for process makeExamples
   default:2
 ---------------------------------------------------*/
-params.n_shards=64
+def proc = 'lscpu -e=cpu'.execute() | 'wc -l'.execute()
+proc.waitFor()
+def number = "${proc.in.text}" as int
+number -= 1
+params.n_shards=number
 numberShardsMinusOne=params.n_shards-1;
 shardsChannel= Channel.from( 0..params.n_shards);
 
