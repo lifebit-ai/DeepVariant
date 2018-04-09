@@ -33,18 +33,18 @@ shardsChannel= Channel.from( 0..params.n_shards);
 
 /*--------------------------------------------------
   Fasta related input files
-  
+
   You can use the flag --hg19 for using the hg19 version of the Genome.
   You can use the flag --h38 for using the GRCh38.p10 version of the Genome.
-  
+
   They can be passed manually, through the parameter:
   	params.fasta="/my/path/to/file";
-  And if already at user's disposal: 
+  And if already at user's disposal:
 	params.fai="/my/path/to/file";
 	params.fastagz="/my/path/to/file";
 	params.gzfai="/my/path/to/file";
 	params.gzi="/my/path/to/file";
-	
+
 ---------------------------------------------------*/
 
 
@@ -58,8 +58,8 @@ params.gzi="nogzi";
 
  params.hg19="";
  params.h38="";
- 
-    fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
+
+   fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
    fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
    fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
    gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
@@ -86,7 +86,7 @@ params.gzi="nogzi";
   // gzfai=file(params.gzfai);
   // gzi=file(params.gzi);
 // }
- 
+
 // if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
  //  System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
  //  System.exit(0);
@@ -112,7 +112,7 @@ if( !("false").equals(params.getBai)){
 params.resultdir = "RESULTS-DeepVariant";
 
 /*--------------------------------------------------
-  Params for the Read Group Line to be added just in 
+  Params for the Read Group Line to be added just in
   case its needed.
   If not given, default values are used.
 ---------------------------------------------------*/
@@ -134,9 +134,11 @@ params.rgsm=20;
 
 
 process preprocessFASTA{
-  
+
   container 'luisas/samtools'
   publishDir "$baseDir/sampleDerivatives"
+
+
   input:
   file fasta from fasta
   file fai from fai
@@ -164,9 +166,12 @@ process preprocessFASTA{
 
 
 process preprocessBAM{
-  
+
+
+  tag "${bam[0]}"
   container 'luisas/samtools'
   publishDir "$baseDir/sampleDerivatives"
+
   input:
   set val(prefix), file(bam) from bamChannel
   output:
@@ -201,15 +206,16 @@ all_fa.cross(all_bam)
       /********************************************************************
         process makeExamples
         Getting bam files and converting them to images ( named examples )
-	
-	Can be parallelized through the params.n_shards 
-	( if params.n_shards >= 1 parallelization happens automatically) 
+
+	Can be parallelized through the params.n_shards
+	( if params.n_shards >= 1 parallelization happens automatically)
       ********************************************************************/
 
 process makeExamples{
 
+    tag "${bam[1]}"
   cpus params.n_shards
-  
+
   input:
     set file(fasta), file(bam) from all_fa_bam
   output:
@@ -236,6 +242,10 @@ process makeExamples{
 
 
 process call_variants{
+
+
+  tag "${bam}"
+
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") from examples
   file 'dv2/models' from model
@@ -258,6 +268,9 @@ process call_variants{
 ********************************************************************/
 
 process postprocess_variants{
+
+
+  tag "$bam"
   publishDir params.resultdir, mode: 'copy'
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam),file('call_variants_output.tfrecord') from called_variants
@@ -276,3 +289,4 @@ process postprocess_variants{
 workflow.onComplete {
     println ( workflow.success ? "Done! \nYou can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
 }
+
