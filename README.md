@@ -11,7 +11,7 @@ In practice, DeepVariant first builds images based on the BAM file, then it uses
 DeepVariant as a Nextflow pipeline provides several advantages to the users. It handles automatically, through **preprocessing steps**, the creation of some extra needed indexed and compressed files which are a necessary input for DeepVariant, and which should normally manually be produced by the users.
 Variant Calling can be performed at the same time on **multiple BAM files** and thanks to the internal parallelization of Nextflow no resources are wasted.
 Nextflow's support of Docker allows to produce the results in a computational reproducible and clean way by running every step inside of a **Docker container**.
-Moreover, you can easily run DeepVariant as a Nextflow pipeline in the **cloud** and let Nextflow do the hard work for you.
+Moreover, you can easily run DeepVariant as a Nextflow pipeline in the **cloud** through the Lifebit platform and let it do the hard work of configuring, scheduling and deploying for you.
 
 For more detailed information about DeepVariant please refer to: 
 https://github.com/google/deepvariant
