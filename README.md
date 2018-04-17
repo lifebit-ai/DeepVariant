@@ -23,7 +23,7 @@ https://research.googleblog.com/2017/12/deepvariant-highly-accurate-genomes.html
 On a aws machine run: 
 
 ```
-git clone https://github.com/cthulhu-tech/DeepVariant
+git clone https://github.com/lifebit-ai/DeepVariant
 cd DeepVariant
 nextflow run main.nf
 ```
