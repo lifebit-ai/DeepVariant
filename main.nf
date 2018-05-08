@@ -245,7 +245,8 @@ process call_variants{
 
 
   tag "${bam}"
-
+  cpus params.n_shards
+  
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") from examples
   file 'dv2/models' from model
@@ -256,7 +257,8 @@ process call_variants{
   /opt/deepvariant/bin/call_variants \
     --outfile call_variants_output.tfrecord \
     --examples shardedExamples/examples.tfrecord@${params.n_shards}.gz \
-    --checkpoint dv2/models/${params.modelName}
+    --checkpoint dv2/models/${params.modelName} \
+    --num_readers params.n_shards
   """
 }
 
