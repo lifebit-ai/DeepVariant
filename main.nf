@@ -273,7 +273,7 @@ process postprocess_variants{
 
 
   tag "$bam"
-  cpus 1
+  cpus params.n_shards
 
   publishDir params.resultdir, mode: 'copy'
   input:
