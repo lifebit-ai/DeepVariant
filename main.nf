@@ -273,6 +273,8 @@ process postprocess_variants{
 
 
   tag "$bam"
+  cpus 1
+
   publishDir params.resultdir, mode: 'copy'
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam),file('call_variants_output.tfrecord') from called_variants
