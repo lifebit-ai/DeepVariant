@@ -100,16 +100,6 @@ All the BAM files on which the variant calling should be performed should be all
 All the input files can be used in s3 buckets too and the s3://path/to/files/in/bucket can be used instead of a local path.
 
 
-- ### REGIONS
-
-```
---regions chr20                            all of chromosome 20
---regions chr20:10,000,000-11,000,000      10-11mb of chr20
---regions "chr20 chr21"                    chromosomes 20 and 21
-```
-
-You can refer to [here](https://github.com/google/deepvariant/blob/r0.5/docs/deepvariant-details.md) to get an exact overview of the parameter regions, which is used exactly used as it is in the standard version of DeepVariant.
-
 
 
 - ### SHARDS 
