@@ -22,14 +22,9 @@ model=file("${params.modelFolder}");
   Cores of the machine --> used for process makeExamples
   default:2
 ---------------------------------------------------*/
-def proc = 'lscpu -e=cpu'.execute() | 'wc -l'.execute()
-proc.waitFor()
-def number = "${proc.in.text}" as int
-number -= 1
-params.n_shards=number
-numberShardsMinusOne=params.n_shards-1;
-shardsChannel= Channel.from( 0..params.n_shards);
-
+int cores = Runtime.getRuntime().availableProcessors();
+params.j=cores
+numberShardsMinusOne=params.j-1;
 
 /*--------------------------------------------------
   Fasta related input files
@@ -47,7 +42,9 @@ shardsChannel= Channel.from( 0..params.n_shards);
 
 ---------------------------------------------------*/
 
-
+params.hg19="true";
+params.h38="";
+params.test="";
 
 params.fasta="nofasta";
 params.fai="nofai";
@@ -55,42 +52,40 @@ params.fastagz="nofastagz";
 params.gzfai="nogzfai";
 params.gzi="nogzi";
 
+if(!("nofasta").equals(params.fasta)){
+  fasta=file(params.fasta)
+  fai=file(params.fai);
+  fastagz=file(params.fastagz);
+  gzfai=file(params.gzfai);
+  gzi=file(params.gzi);
+}
+else if(params.h38 ){
+  fasta=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa");
+  fai=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.fai");
+  fastagz=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz");
+  gzfai=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz.fai");
+  gzi=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz.gzi");
+}
+else if(params.test){
+  fasta=file("testdata/ucsc.hg19.chr20.unittest.fasta");
+  fai=file("testdata/ucsc.hg19.chr20.unittest.fasta.fai");
+  fastagz=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz");
+  gzfai=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz.fai");
+  gzi=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz.gzi");
+}
+else if(params.hg19 ){
+  fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
+  fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
+  fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
+  gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
+  gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
+}
+else{
+  System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
+  System.out.println(" or you can use standard genome versions by typing --hg19 or --h38 ");
+  System.exit(0);
+}
 
- params.hg19="";
- params.h38="";
-
-   fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
-   fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
-   fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
-   gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
-   gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
-
-// if(params.hg19){
- //  fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
-  // fai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.fai");
- //  fastagz=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz");
- //  gzfai=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.fai");
- //  gzi=file("s3://deepvariant-data/genomes/hg19/hg19.fa.gz.gzi");
-// }
-// else if(params.h38){
- //  fasta=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa");
-  // fai=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.fai");
-  // fastagz=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz");
- //  gzfai=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz.fai");
- //  gzi=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz.gzi");
-// }
-// else{
- //  fasta=file(params.fasta)
- //  fai=file(params.fai);
-  // fastagz=file(params.fastagz);
-  // gzfai=file(params.gzfai);
-  // gzi=file(params.gzi);
-// }
-
-// if(("nofasta").equals(params.fasta) && !params.hg19 && !params.h38 ){
- //  System.out.println(" --fasta \"/path/to/your/genome\"  params is required and was not found! ");
- //  System.exit(0);
-// }
 
 
 /*--------------------------------------------------
@@ -214,7 +209,7 @@ all_fa.cross(all_bam)
 process makeExamples{
 
     tag "${bam[1]}"
-  cpus params.n_shards
+  cpus params.j
 
   input:
     set file(fasta), file(bam) from all_fa_bam
@@ -245,7 +240,7 @@ process call_variants{
 
 
   tag "${bam}"
-  cpus params.n_shards
+  cpus params.j
   
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") from examples
@@ -273,7 +268,7 @@ process postprocess_variants{
 
 
   tag "$bam"
-  cpus params.n_shards
+  cpus params.j
 
   publishDir params.resultdir, mode: 'copy'
   input:
