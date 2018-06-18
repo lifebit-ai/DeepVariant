@@ -67,11 +67,11 @@ else if(params.h38 ){
   gzi=file("s3://deepvariant-data/genomes/h38/GRCh38.p10.genome.fa.gz.gzi");
 }
 else if(params.test){
-  fasta=file("testdata/ucsc.hg19.chr20.unittest.fasta");
-  fai=file("testdata/ucsc.hg19.chr20.unittest.fasta.fai");
-  fastagz=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz");
-  gzfai=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz.fai");
-  gzi=file("testdata/ucsc.hg19.chr20.unittest.fasta.gz.gzi");
+  fasta=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta");
+  fai=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.fai");
+  fastagz=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz");
+  gzfai=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz.fai");
+  gzi=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz.gzi");
 }
 else if(params.hg19 ){
   fasta=file("s3://deepvariant-data/genomes/hg19/hg19.fa");
