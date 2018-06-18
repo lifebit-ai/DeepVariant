@@ -1,6 +1,7 @@
 # DeepVariant as a Nextflow pipeline
 
-It permits to run DeepVariant in its whole functionalities and it eases preprocessing steps
+A Nextflow pipeline for running the DeepVariant variant caller.
+
 
 ## What is DeepVariant and why in Nextflow?
 
@@ -18,21 +19,31 @@ https://github.com/google/deepvariant
 https://research.googleblog.com/2017/12/deepvariant-highly-accurate-genomes.html
 
 
-## Quick run
+## Test Run 
 
-On a aws machine run: 
+Locally or through the Deploit platform run: 
 
 ```
 git clone https://github.com/lifebit-ai/DeepVariant
 cd DeepVariant
-nextflow run main.nf
+nextflow run main.nf --test
 ```
 
-In this way, the **prepared data** on s3 bucket are used for running DeepVariant and you can find the produced VCF files in the folder "RESULTS-DeepVariant".
-To run this step can be useful for a user to **see how it looks like to run the completely funcitonal version of the pipeline**.
+In this way, the **prepared data** on repository (under test data) are used for running DeepVariant and you can find the produced VCF files in the folder "RESULTS-DeepVariant".
+
 The input of the pipeline can be eventually changed as explained in the "Input parameters" section.
 
-## The workflow 
+## Quick Start
+
+```
+git clone https://github.com/lifebit-ai/DeepVariant
+cd DeepVariant
+nextflow run main.nf --hg19 --bam_folder "s3://lifebit-test-data/bam/"
+```
+In this case variants are called on the two bam files contained in the lifebit-test-data/bam s3 bucket. The hg19 version of the reference genome is used.
+Two vcf files are produced and can be found in the folder "RESULTS-DeepVariant"
+
+## More about the pipeline 
 
 As shown in the following picture, the worklow both contains **preprocessing steps** ( light blue ones ) and proper **variant calling steps** ( darker blue ones ).
 
@@ -56,36 +67,14 @@ This is how the list of the needed input files looks like. If these are passed a
 NA12878_S1.chr20.10_10p1mb.bam   NA12878_S1.chr20.10_10p1mb.bam.bai	
 ucsc.hg19.chr20.unittest.fasta   ucsc.hg19.chr20.unittest.fasta.fai 
 ucsc.hg19.chr20.unittest.fasta.gz  ucsc.hg19.chr20.unittest.fasta.gz.fai   ucsc.hg19.chr20.unittest.fasta.gz.gzi
-
 ```
-If you do not have all of them, these are the file you can give as input to the Nextflow pipeline, and the rest will be automatically  produced for you.
+If you do not have all of them, these are the file you can give as input to the Nextflow pipeline, and the rest will be automatically  produced for you .
 ```
 NA12878_S1.chr20.10_10p1b.bam  
 ucsc.hg19.chr20.unittest.fasta
 ```
 
 ### Parameters definition 
-
-- ### REFERENCE GENOME
-
- Two standard version of the genome ( hg19 and GRCh38.p10 ) are prepared with all their compressed and indexed file in a lifebit s3      bucket.
- They can be used by using one of the flags:
- 
- ```
- --hg19
- --h38
- ```
- 
- Alternatively, a user can use an own reference genome version, by using the following parameters:
-
-  ```
-  --fasta "/path/to/myGenome.fa"                REQUIRED
-  --fai   "/path/to/myGenome.fa.fai"            OPTIONAL
-  --fastagz "/path/to/myGenome.fa.gz"           OPTIONAL
-  -gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
-  -gzi  "/path/to/myGenome.fa"                  OPTIONAL
-  ```
-If the optional parameters are not passed, they will be automatically be produced for you and you will be able to find them in the "preprocessingOUTPUT" folder.
 
 - ### BAM FILES 
 
@@ -100,15 +89,43 @@ All the BAM files on which the variant calling should be performed should be all
 All the input files can be used in s3 buckets too and the s3://path/to/files/in/bucket can be used instead of a local path.
 
 
+- ### REFERENCE GENOME
 
+ By default the hg19 version of the reference genome is used. If you want to use it, you do not have to pass anything.
+ 
+ If you do not want to use the deafult version, here is how it works: 
+ 
+ Two standard version of the genome ( hg19 and GRCh38.p10 ) are prepared with all their compressed and indexed file in a   lifebit s3 bucket.
+ They can be used by using one of the flags:
+ 
+ ```
+ --hg19 (default) 
+ --h38
+ ```
+ 
+ Alternatively, a user can use an own reference genome version, by using the following parameters:
+
+  ```
+  --fasta "/path/to/myGenome.fa"                OPTIONAL
+  --fai   "/path/to/myGenome.fa.fai"            OPTIONAL
+  --fastagz "/path/to/myGenome.fa.gz"           OPTIONAL
+  -gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
+  -gzi  "/path/to/myGenome.fa"                  OPTIONAL
+  ```
+If the optional parameters are not passed, they will be automatically be produced for you and you will be able to find them in the "preprocessingOUTPUT" folder.
+
+
+
+
+### Advanced parameters options
 
 - ### SHARDS 
 
-The **make_example** process can be internally parallelized and it can be defined how many cores should be assigned to this process.
-By default 2 cores are used.
+The **make_example** process can be internally parallelized and it can be defined how many cpus should be assigned to this process.
+By default all the cpus of the machine are used.
 
 ```
---n_shards 2          OPTIONAL (default: 2)
+--j 2          OPTIONAL (default: all)
 ```
 - ### MODEL 
 
