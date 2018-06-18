@@ -53,7 +53,7 @@ The worklow **accepts one reference genome and multiple BAM files as input**. Th
 
 
 <p align="center">
-  <img src="https://github.com/cthulhu-tech/DeepVariant/pics/blob/master/pic_workflow.jpg">
+  <img src="https://github.com/lifebit-ai/DeepVariant/blob/master/pics/pic_workflow.jpg">
 </p>
 
 ## INPUT PARAMETERS
