@@ -53,7 +53,7 @@ The worklow **accepts one reference genome and multiple BAM files as input**. Th
 
 
 <p align="center">
-  <img src="https://github.com/cthulhu-tech/DeepVariant/blob/master/dpwf.jpg">
+  <img src="https://github.com/cthulhu-tech/DeepVariant/pics/blob/master/pic_workflow.jpg">
 </p>
 
 ## INPUT PARAMETERS
@@ -109,8 +109,8 @@ All the input files can be used in s3 buckets too and the s3://path/to/files/in/
   --fasta "/path/to/myGenome.fa"                OPTIONAL
   --fai   "/path/to/myGenome.fa.fai"            OPTIONAL
   --fastagz "/path/to/myGenome.fa.gz"           OPTIONAL
-  -gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
-  -gzi  "/path/to/myGenome.fa"                  OPTIONAL
+  --gzfai  "/path/to/myGenome.fa.gz.fai"         OPTIONAL
+  --gzi  "/path/to/myGenome.fa"                  OPTIONAL
   ```
 If the optional parameters are not passed, they will be automatically be produced for you and you will be able to find them in the "preprocessingOUTPUT" folder.
 
