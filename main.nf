@@ -95,6 +95,10 @@ else{
 params.bam_folder="s3://deepvariant-data/test-bam/hg19-mediumMultiple/";
 params.getBai="true";
 
+if(params.test){
+    params.bam_folder=""$baseDir/testdata/"
+}
+
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
 }else{
