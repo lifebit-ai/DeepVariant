@@ -224,7 +224,7 @@ process makeExamples{
       --mode calling \
       --ref !{fasta[1]}.gz\
       --reads !{bam[1]} \
-      --examples shardedExamples/examples.tfrecord@!{params.n_shards}.gz\
+      --examples shardedExamples/examples.tfrecord@!{params.j}.gz\
       --task {}
   '''
 }
@@ -251,9 +251,9 @@ process call_variants{
   """
   /opt/deepvariant/bin/call_variants \
     --outfile call_variants_output.tfrecord \
-    --examples shardedExamples/examples.tfrecord@${params.n_shards}.gz \
+    --examples shardedExamples/examples.tfrecord@${paramsj}.gz \
     --checkpoint dv2/models/${params.modelName} \
-    --num_readers ${params.n_shards}
+    --num_readers ${params.j}
   """
 }
 
