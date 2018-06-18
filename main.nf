@@ -92,12 +92,15 @@ else{
   Bam related input files
 ---------------------------------------------------*/
 
-params.bam_folder="s3://deepvariant-data/test-bam/hg19-mediumMultiple/";
 params.getBai="true";
 
 if(params.test){
-    params.bam_folder="$baseDir/testdata/"
+    params.bam_folder="$baseDir/testdata"
 }
+
+assert (params.bam_folder != true) && (params.bam_folder != null) : "please specify --bam_folder option (--bam_folder bamfolder)"
+
+
 
 if( !("false").equals(params.getBai)){
   Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
@@ -255,7 +258,7 @@ process call_variants{
   """
   /opt/deepvariant/bin/call_variants \
     --outfile call_variants_output.tfrecord \
-    --examples shardedExamples/examples.tfrecord@${paramsj}.gz \
+    --examples shardedExamples/examples.tfrecord@${params.j}.gz \
     --checkpoint dv2/models/${params.modelName} \
     --num_readers ${params.j}
   """
