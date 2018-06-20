@@ -2,6 +2,8 @@
 
 A Nextflow pipeline for running the DeepVariant variant caller.
 
+Read more about DeepVariant in Nextflow in our [Blog post](https://blog.lifebit.ai/post/deepvariant/)
+
 
 ## What is DeepVariant and why in Nextflow?
 
