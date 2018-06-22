@@ -21,6 +21,11 @@ https://github.com/google/deepvariant
 https://research.googleblog.com/2017/12/deepvariant-highly-accurate-genomes.html
 
 
+## Dependencies
+
+Nextflow
+Docker
+
 ## Test Run 
 
 Locally or through the Deploit platform run: 
