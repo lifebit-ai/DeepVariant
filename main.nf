@@ -110,9 +110,10 @@ if(params.test){
 assert (params.bam_folder != true) && (params.bam_folder != null) : "please specify --bam_folder option (--bam_folder bamfolder)"
 
 
+params.bam_file_prefix=""
 
 if( !("false").equals(params.getBai)){
-  Channel.fromFilePairs("${params.bam_folder}/*.{bam,bam.bai}").set{bamChannel}
+  Channel.fromFilePairs("${params.bam_folder}/*${bam_file_prefix}.{bam,bam.bai}").set{bamChannel}
 }else{
   Channel.fromPath("${params.bam_folder}/*.bam").map{ file -> tuple(file.name, file) }.set{bamChannel}
 }
