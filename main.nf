@@ -113,9 +113,9 @@ assert (params.bam_folder != true) && (params.bam_folder != null) : "please spec
 params.bam_file_prefix="*"
 
 if( !("false").equals(params.getBai)){
-  Channel.fromFilePairs("${params.bam_folder}/${params.bam_file_prefix}.{bam,bam.bai}").set{bamChannel}
+  Channel.fromFilePairs("${params.bam_folder}/${params.bam_file_prefix}*.{bam,bam.bai}").set{bamChannel}
 }else{
-  Channel.fromPath("${params.bam_folder}/${params.bam_file_prefix}.bam").map{ file -> tuple(file.name, file) }.set{bamChannel}
+  Channel.fromPath("${params.bam_folder}/${params.bam_file_prefix}*.bam").map{ file -> tuple(file.name, file) }.set{bamChannel}
 }
 
 /*--------------------------------------------------
