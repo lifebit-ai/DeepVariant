@@ -164,8 +164,8 @@ process preprocessFASTA{
   """
   [[ $fai == "nofai" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
   [[ $fastagz == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
-  [[ $gzfai == "nogzi" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
-  [[ $gzi == "nogzfai" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
+  [[ $gzfai == "nogzfai" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
+  [[ $gzi == "nogzi" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
 }
 
