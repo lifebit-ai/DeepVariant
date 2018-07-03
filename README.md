@@ -45,7 +45,7 @@ The input of the pipeline can be eventually changed as explained in the "Input p
 ```
 git clone https://github.com/lifebit-ai/DeepVariant
 cd DeepVariant
-nextflow run main.nf --hg19 --bam_folder "s3://lifebit-test-data/bam/"
+nextflow run main.nf --hg19 --bam_folder "s3://deepvariant-data/test-bam/"
 ```
 In this case variants are called on the two bam files contained in the lifebit-test-data/bam s3 bucket. The hg19 version of the reference genome is used.
 Two vcf files are produced and can be found in the folder "RESULTS-DeepVariant"
