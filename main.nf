@@ -42,7 +42,7 @@ numberShardsMinusOne=params.j-1;
 
 ---------------------------------------------------*/
 
-params.hg19="true";
+params.hg19="";
 params.h38="";
 params.test="";
 params.hg19chr20="";
