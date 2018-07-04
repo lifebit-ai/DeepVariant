@@ -162,10 +162,10 @@ process preprocessFASTA{
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi") into fastaChannel
   script:
   """
-  [[ $fai == "nofai" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
-  [[ $fastagz == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
-  [[ $gzfai == "nogzfai" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
-  [[ $gzi == "nogzi" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
+  [[ ${params.fai} == "nofai" ]] &&  samtools faidx $fasta || echo " fai file of user is used, not created"
+  [[ ${params.fastagz} == "nofastagz" ]]  && bgzip -c ${fasta} > ${fasta}.gz || echo "fasta.gz file of user is used, not created "
+  [[ ${params.gzfai} == "nogzfai" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
+  [[ ${params.gzi} == "nogzi" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
 }
 
