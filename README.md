@@ -89,6 +89,10 @@ ucsc.hg19.chr20.unittest.fasta
 --bam_folder "/path/to/folder/where/bam/files/are"            REQUIRED
 --getBai "true"                                               OPTIONAL  (default: "false")
 ```
+In case only some specific files inside the BAM folder should be used as input, a file prefix can be defined by: 
+```
+--bam_file_prefix MYPREFIX
+```
 
 All the BAM files on which the variant calling should be performed should be all stored in the same folder. If you already have the index files (BAI) they should be stored in the same folder and called with the same prefix as the correspoding BAM file ( e.g. file.bam and file.bam.bai ). 
 
@@ -110,6 +114,10 @@ All the input files can be used in s3 buckets too and the s3://path/to/files/in/
  --h38
  ```
  
+ For testing purposes we provide the chr20 of the hg19 version of the genome, accessible by: 
+ ```
+ --hg19chr20
+ ```
  Alternatively, a user can use an own reference genome version, by using the following parameters:
 
   ```
@@ -126,7 +134,7 @@ If the optional parameters are not passed, they will be automatically be produce
 
 ### Advanced parameters options
 
-- ### SHARDS 
+- ### CPUS 
 
 The **make_example** process can be internally parallelized and it can be defined how many cpus should be assigned to this process.
 By default all the cpus of the machine are used.
