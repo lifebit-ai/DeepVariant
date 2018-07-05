@@ -148,7 +148,7 @@ params.rgsm=20;
 
 process preprocessFASTA{
 
-  container 'biocontainers/samtools'
+  container 'lifebitai/preprocessingvctools'
   publishDir "$baseDir/sampleDerivatives"
 
 
@@ -183,7 +183,7 @@ process preprocessBAM{
 
 
   tag "${bam[0]}"
-  container 'biocontainers/samtools'
+  container 'lifebitai/preprocessingvctools'
   publishDir "$baseDir/sampleDerivatives"
 
   input:
