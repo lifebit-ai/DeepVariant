@@ -47,7 +47,7 @@ params.h38="";
 params.test="";
 params.hg19chr20="";
 params.grch37primary="";
-
+params.hs37d5="";
 
 params.fasta="nofasta";
 params.fai="nofai";
@@ -75,6 +75,13 @@ else if(params.test){
   fastagz=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz");
   gzfai=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz.fai");
   gzi=file("$baseDir/testdata/ucsc.hg19.chr20.unittest.fasta.gz.gzi");
+}
+else if(params.hs37d5){
+  fasta=file("s3://deepvariant-data/genomes/hs37d5/hs37d5.fa");
+  fai=file("s3://deepvariant-data/genomes/hs37d5/hs37d5.fa.fai");
+  fastagz=file("s3://deepvariant-data/genomes/hs37d5/hs37d5.fa.gz");
+  gzfai=file("s3://deepvariant-data/genomes/hs37d5/hs37d5.fa.gz.fai");
+  gzi=file("s3://deepvariant-data/genomes/hs37d5/hs37d5.fa.gz.gzi");
 }
 else if(params.grch37primary){
   fasta=file("s3://deepvariant-data/genomes/GRCh37.dna.primary/Homo_sapiens.GRCh37.dna.primary_assembly.fa");
