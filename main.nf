@@ -46,6 +46,7 @@ params.hg19="true";
 params.h38="";
 params.test="";
 params.hg19chr20="";
+params.grch37primary="";
 
 
 params.fasta="nofasta";
