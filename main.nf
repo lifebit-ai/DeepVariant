@@ -102,7 +102,7 @@ else{
   Bam related input files
 ---------------------------------------------------*/
 
-params.getBai="true";
+params.getBai="false";
 
 if(params.test){
     params.bam_folder="$baseDir/testdata"
