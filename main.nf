@@ -15,7 +15,13 @@ import java.util.List;
 ---------------------------------------------------*/
 params.modelFolder="s3://deepvariant-data/models"
 params.modelName="model.ckpt";
-model=file("${params.modelFolder}");
+params.exome=""; 
+if(params.exome){
+  model=file("s3://deepvariant-data/models/exome");
+}
+else{
+  model=file("${params.modelFolder}");
+}
 
 
 /*--------------------------------------------------
