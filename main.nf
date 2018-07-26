@@ -25,6 +25,12 @@ else{
 
 
 /*--------------------------------------------------
+  Using the BED file
+---------------------------------------------------*/
+assert (params.bed != true) && (params.bed != null) : "please specify --bed option (--bed bedfile)"
+bedfile=file("${params.bed}")
+
+/*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
   default:2
 ---------------------------------------------------*/
@@ -247,6 +253,7 @@ all_fa.cross(all_bam)
 	( if params.n_shards >= 1 parallelization happens automatically)
       ********************************************************************/
 
+
 process makeExamples{
 
     tag "${bam[1]}"
@@ -254,6 +261,7 @@ process makeExamples{
 
   input:
     set file(fasta), file(bam) from all_fa_bam
+    file bedfile from bedfile
   output:
     set file("${fasta[1]}"),file("${fasta[1]}.fai"),file("${fasta[1]}.gz"),file("${fasta[1]}.gz.fai"), file("${fasta[1]}.gz.gzi"),val("${bam[1]}"), file("shardedExamples") into examples
   shell:
@@ -266,6 +274,7 @@ process makeExamples{
       --ref !{fasta[1]}.gz\
       --reads !{bam[1]} \
       --examples shardedExamples/examples.tfrecord@!{params.j}.gz\
+      --regions !{bedfile} \
       --task {}
   '''
 }
