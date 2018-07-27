@@ -15,7 +15,7 @@ import java.util.List;
 ---------------------------------------------------*/
 params.modelFolder="s3://deepvariant-data/models"
 params.modelName="model.ckpt";
-params.exome=""; 
+params.exome="";
 if(params.exome){
   model=file("s3://deepvariant-data/models/exome");
 }
@@ -27,8 +27,11 @@ else{
 /*--------------------------------------------------
   Using the BED file
 ---------------------------------------------------*/
-assert (params.bed != true) && (params.bed != null) : "please specify --bed option (--bed bedfile)"
-bedfile=file("${params.bed}")
+params.bed=""
+if(params.exome){
+  assert (params.bed != true) && (params.bed != null) : "please specify --bed option (--bed bedfile)"
+  bedfile=file("${params.bed}")
+}
 
 /*--------------------------------------------------
   Cores of the machine --> used for process makeExamples
@@ -194,7 +197,7 @@ process preprocessFASTA{
   [[ "${params.gzi}"=="nogzi" ]] && bgzip -c -i ${fasta} > ${fasta}.gz || echo "gzi file of user is used, not created"
   [[ "${params.gzfai}"=="nogzfai" ]] && samtools faidx "${fasta}.gz" || echo "gz.fai file of user is used, not created"
   """
-  
+
 }
 
 
@@ -253,32 +256,56 @@ all_fa.cross(all_bam)
 	( if params.n_shards >= 1 parallelization happens automatically)
       ********************************************************************/
 
+if(params.bed){
+  process makeExamples_with_bed{
 
-process makeExamples{
+      tag "${bam[1]}"
+    cpus params.j
+
+    input:
+      set file(fasta), file(bam) from all_fa_bam
+      file bedfile from bedfile
+    output:
+      set file("${fasta[1]}"),file("${fasta[1]}.fai"),file("${fasta[1]}.gz"),file("${fasta[1]}.gz.fai"), file("${fasta[1]}.gz.gzi"),val("${bam[1]}"), file("shardedExamples") into examples
+    shell:
+    '''
+      mkdir shardedExamples
+      time seq 0 !{numberShardsMinusOne} | \
+      parallel --eta --halt 2 \
+        python /opt/deepvariant/bin/make_examples.zip \
+        --mode calling \
+        --ref !{fasta[1]}.gz\
+        --reads !{bam[1]} \
+        --examples shardedExamples/examples.tfrecord@!{params.j}.gz\
+        --regions !{bedfile} \
+        --task {}
+    '''
+  }
+}
+else{
+  process makeExamples{
 
     tag "${bam[1]}"
-  cpus params.j
+    cpus params.j
 
-  input:
-    set file(fasta), file(bam) from all_fa_bam
-    file bedfile from bedfile
-  output:
-    set file("${fasta[1]}"),file("${fasta[1]}.fai"),file("${fasta[1]}.gz"),file("${fasta[1]}.gz.fai"), file("${fasta[1]}.gz.gzi"),val("${bam[1]}"), file("shardedExamples") into examples
-  shell:
-  '''
-    mkdir shardedExamples
-    time seq 0 !{numberShardsMinusOne} | \
-    parallel --eta --halt 2 \
-      python /opt/deepvariant/bin/make_examples.zip \
-      --mode calling \
-      --ref !{fasta[1]}.gz\
-      --reads !{bam[1]} \
-      --examples shardedExamples/examples.tfrecord@!{params.j}.gz\
-      --regions !{bedfile} \
-      --task {}
-  '''
+    input:
+      set file(fasta), file(bam) from all_fa_bam
+    output:
+      set file("${fasta[1]}"),file("${fasta[1]}.fai"),file("${fasta[1]}.gz"),file("${fasta[1]}.gz.fai"), file("${fasta[1]}.gz.gzi"),val("${bam[1]}"), file("shardedExamples") into examples
+    shell:
+    '''
+      mkdir shardedExamples
+      time seq 0 !{numberShardsMinusOne} | \
+      parallel --eta --halt 2 \
+        python /opt/deepvariant/bin/make_examples.zip \
+        --mode calling \
+        --ref !{fasta[1]}.gz\
+        --reads !{bam[1]} \
+        --examples shardedExamples/examples.tfrecord@!{params.j}.gz\
+        --task {}
+    '''
+  }
 }
-
 /********************************************************************
   process call_variants
   Doing the variant calling based on the ML trained model.
@@ -291,7 +318,7 @@ process call_variants{
 
   tag "${bam}"
   cpus params.j
-  
+
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"),val(bam), file("shardedExamples") from examples
   file 'dv2/models' from model
@@ -338,4 +365,3 @@ process postprocess_variants{
 workflow.onComplete {
     println ( workflow.success ? "Done! \nYou can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
 }
-
