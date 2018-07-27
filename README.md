@@ -1,8 +1,10 @@
 # DeepVariant as a Nextflow pipeline
 
-A Nextflow pipeline for running the DeepVariant variant caller.
+A Nextflow pipeline for running the [Google DeepVariant variant caller](https://github.com/google/deepvariant).
 
-Read more about DeepVariant in Nextflow in our [Blog post](https://blog.lifebit.ai/post/deepvariant/)
+At [Lifebit](https://lifebit.ai/?utm_campaign=documentation&utm_source=github&utm_medium=web) we developed this pipeline to ease and reduce cost for variant calling analyses. You can test the pipeline through our Platform: [Deploit](https://deploit.lifebit.ai/app/home). This allows you to run Deepvariant over cloud in a matter of a couple of clicks: and for single users our service is completely free! 
+
+Read more about DeepVariant in Nextflow in our [Blog post](https://blog.lifebit.ai/post/deepvariant/?utm_campaign=documentation&utm_source=github&utm_medium=web)
 
 
 ## What is DeepVariant and why in Nextflow?
@@ -23,8 +25,8 @@ https://research.googleblog.com/2017/12/deepvariant-highly-accurate-genomes.html
 
 ## Dependencies
 
-Nextflow
-Docker
+[Nextflow](https://www.nextflow.io/)
+[Docker](https://www.docker.com/)
 
 ## Test Run 
 
@@ -42,6 +44,7 @@ The input of the pipeline can be eventually changed as explained in the "Input p
 
 ## Quick Start
 
+A typical run on **whole genome data** looks like this: 
 ```
 git clone https://github.com/lifebit-ai/DeepVariant
 cd DeepVariant
@@ -49,6 +52,15 @@ nextflow run main.nf --hg19 --bam_folder "s3://deepvariant-data/test-bam/"
 ```
 In this case variants are called on the two bam files contained in the lifebit-test-data/bam s3 bucket. The hg19 version of the reference genome is used.
 Two vcf files are produced and can be found in the folder "RESULTS-DeepVariant"
+
+
+A typical run on **whole exome data** looks like this: 
+```
+git clone https://github.com/lifebit-ai/DeepVariant
+cd DeepVariant
+nextflow run main.nf --exome --hg19 --bam_folder myBamFolder --bed myBedFile"
+```
+
 
 ## More about the pipeline 
 
@@ -112,6 +124,8 @@ All the input files can be used in s3 buckets too and the s3://path/to/files/in/
  ```
  --hg19 (default) 
  --h38
+ --hs37d5
+ --grch37primary
  ```
  
  For testing purposes we provide the chr20 of the hg19 version of the genome, accessible by: 
@@ -129,7 +143,13 @@ All the input files can be used in s3 buckets too and the s3://path/to/files/in/
   ```
 If the optional parameters are not passed, they will be automatically be produced for you and you will be able to find them in the "preprocessingOUTPUT" folder.
 
+- ### Exome data and Bed file
 
+If you are running on exome data you need to prodive the --exome flag so that the right verison of the model will be used.
+Moreover, you can provide a bed file.
+```
+nextflow run main.nf --exome --hg19 --bam_folder myBamFolder --bed myBedFile
+```
 
 
 ### Advanced parameters options
@@ -145,9 +165,13 @@ By default all the cpus of the machine are used.
 - ### MODEL 
 
 The trained model which is used by the **call_variants** process can be changed.
-The default one is the 0.5.0 Version for the whole genome ( not exome!). So if that is what you want to use too, nothing needs to be changed.
+The default one is the 0.6.0 Version for the whole genome. So if that is what you want to use too, nothing needs to be changed.
+If you want to access the version 0.6.0 for the whole exome model, you need to use the --exome flag.
+```
+nextflow run main.nf --exome --hg19 --bam_folder myBamFolder --bed myBedFile
+```
 
-
+In case you want to use another version of the model you can change it by: 
 ```
 --modelFolder "s3://deepvariant-test/models"
 --modelName   "model.ckpt"
