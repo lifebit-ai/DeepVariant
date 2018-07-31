@@ -213,7 +213,7 @@ process preprocessBAM{
 
 
   tag "${bam[0]}"
-  container 'lifebitai/preprocessingvctools'
+  container 'lifebitai/samtools'
   publishDir "$baseDir/sampleDerivatives"
 
   input:
