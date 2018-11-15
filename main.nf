@@ -223,7 +223,7 @@ process preprocessBAM{
   script:
   """
 	  mkdir ready
-  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready;}|| { java -jar /picard.jar AddOrReplaceReadGroups \
+  [[ `samtools view -H ${bam[0]} | grep '@RG' | wc -l`   > 0 ]] && { mv $bam ready;}|| { picard AddOrReplaceReadGroups \
     I=${bam[0]} \
     O=ready/${bam[0]} \
     RGID=${params.rgid} \
