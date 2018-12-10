@@ -153,6 +153,7 @@ if( !("false").equals(params.getBai)){
   Output directory
 ---------------------------------------------------*/
 params.resultdir = "RESULTS-DeepVariant";
+params.skip_plot_vcf = false
 
 /*--------------------------------------------------
   Params for the Read Group Line to be added just in
@@ -351,7 +352,7 @@ process postprocess_variants{
   input:
   set file(fasta),file("${fasta}.fai"),file("${fasta}.gz"),file("${fasta}.gz.fai"), file("${fasta}.gz.gzi"), val(bam),file('call_variants_output.tfrecord') from called_variants
   output:
-   set val(bam),file("${bam}.vcf") into postout
+   set val(bam),file("${bam}.vcf") into postout, vcf
   script:
   """
     /opt/deepvariant/bin/postprocess_variants \
@@ -361,6 +362,38 @@ process postprocess_variants{
   """
 }
 
+
+
+/*
+ * Generate plot from output vcf file
+ */
+process vcf_plot {
+
+    tag "${bam}.vcf"
+    publishDir "${params.resultdir}", mode: 'copy'
+
+    container 'lifebitai/vcfr:latest'
+
+    when:
+    !params.skip_plot_vcf
+
+    input:
+    set val(bam),file("${bam}.vcf") from vcf
+
+    output:
+    file 'Rplots.pdf' into plot
+
+    script:
+    """
+    #!/usr/bin/env Rscript
+
+    library(vcfR)
+    vcf_file <- "${bam}.vcf"
+    vcf <- read.vcfR(vcf_file, verbose = FALSE)
+    plot(vcf)
+    dev.off()
+    """
+}
 
 workflow.onComplete {
     println ( workflow.success ? "Done! \nYou can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
