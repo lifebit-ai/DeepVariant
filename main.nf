@@ -152,7 +152,7 @@ if( !("false").equals(params.getBai)){
 /*--------------------------------------------------
   Output directory
 ---------------------------------------------------*/
-params.resultdir = "RESULTS-DeepVariant";
+params.resultdir = "results";
 
 /*--------------------------------------------------
   Params for the Read Group Line to be added just in
@@ -389,7 +389,7 @@ process multiqc{
   file(vcfout) from vcfout
   output:
   file("*") into multiqc
-  
+
   script:
   """
   multiqc . -m vcftools
