@@ -362,6 +362,41 @@ process postprocess_variants{
 }
 
 
+process vcftools{
+  tag "$vcf"
+
+  container 'lifebitai/vcftools:latest'
+
+  input:
+  set val(bam),file(vcf) from postout
+  output:
+  file("*") into vcfout
+
+  script:
+  """
+  vcftools --vcf $vcf --TsTv-summary
+  vcftools --vcf $vcf --TsTv-by-count
+  vcftools --vcf $vcf --TsTv-by-qual
+  """
+}
+
+process multiqc{
+
+  publishDir "${params.resultdir}/MultiQC", mode: 'copy'
+  container 'maxulysse/multiqc:latest'
+
+  input:
+  file(vcfout) from vcfout
+  output:
+  file("*") into multiqc
+  
+  script:
+  """
+  multiqc . -m vcftools
+  """
+}
+
+
 workflow.onComplete {
     println ( workflow.success ? "Done! \nYou can find your results in $baseDir/${params.resultdir}" : "Oops .. something went wrong" )
 }
