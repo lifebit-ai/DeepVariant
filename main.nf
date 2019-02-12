@@ -219,7 +219,7 @@ process preprocessBAM{
   input:
   set val(prefix), file(bam) from bamChannel
   output:
-  set file("ready/${bam[0]}"), file("ready/${bam[0]}.bai") into completeChannel
+  set file("ready/${bam[0]}"), file("ready/${bam[0]}.bai") into completeChannel, completeStats
   script:
   """
 	  mkdir ready
@@ -232,6 +232,24 @@ process preprocessBAM{
     RGPU=${params.rgpu} \
     RGSM=${params.rgsm};}
     cd ready ;samtools index ${bam[0]};
+  """
+}
+
+
+process BAMstats{
+
+  tag "${bam[0]}"
+  container 'lifebitai/samtools'
+
+  input:
+  set file(bam), file(bai) from completeStats
+  output:
+  file("*") into bam_multiqc
+  script:
+  """
+  samtools stats $bam > stats.txt
+  samtools flagstat $bam > flagstat.txt
+  samtools idxstats $bam > idxstats.txt
   """
 }
 
@@ -381,18 +399,20 @@ process vcftools{
 }
 
 process multiqc{
+  tag "multiqc_report.html"
 
   publishDir "${params.resultdir}/MultiQC", mode: 'copy'
   container 'maxulysse/multiqc:latest'
 
   input:
   file(vcfout) from vcfout
+  file(bamout) from bam_multiqc
   output:
   file("*") into multiqc
 
   script:
   """
-  multiqc . -m vcftools
+  multiqc . -m vcftools -m samtools
   """
 }
 
