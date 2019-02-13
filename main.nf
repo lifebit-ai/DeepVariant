@@ -402,7 +402,7 @@ process multiqc{
   tag "multiqc_report.html"
 
   publishDir "${params.resultdir}/MultiQC", mode: 'copy'
-  container 'maxulysse/multiqc:latest'
+  container 'ewels/multiqc:v1.7'
 
   input:
   file(vcfout) from vcfout
