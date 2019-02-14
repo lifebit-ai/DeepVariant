@@ -395,6 +395,8 @@ process vcftools{
   vcftools --vcf $vcf --TsTv-summary
   vcftools --vcf $vcf --TsTv-by-count
   vcftools --vcf $vcf --TsTv-by-qual
+  # remove rows containing 'inf' which breaks multiqc report
+  sed -i '/inf/d' out.TsTv.qual
   """
 }
 
