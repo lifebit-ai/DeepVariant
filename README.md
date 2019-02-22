@@ -4,6 +4,10 @@ A Nextflow pipeline for running the [Google DeepVariant variant caller](https://
 
 At [Lifebit](https://lifebit.ai/?utm_campaign=documentation&utm_source=github&utm_medium=web) we developed this pipeline to ease and reduce cost for variant calling analyses. You can test the pipeline through our Platform: [Deploit](https://deploit.lifebit.ai/app/home). This allows you to run Deepvariant over cloud in a matter of a couple of clicks: and for single users our service is completely free! 
 
+![](http://g.recordit.co/iyMUgBgw5E.gif)
+
+Alternatively if you want to run the pipeline on the command line checkout [nf-core/deepvariant](https://github.com/nf-core/deepvariant) for a newer improved version of the pipeline!
+
 Read more about DeepVariant in Nextflow in our [Blog post](https://blog.lifebit.ai/post/deepvariant/?utm_campaign=documentation&utm_source=github&utm_medium=web)
 
 
