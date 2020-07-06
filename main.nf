@@ -404,7 +404,7 @@ process multiqc{
   tag "multiqc_report.html"
 
   publishDir "${params.resultdir}/MultiQC", mode: 'copy'
-  container 'ewels/multiqc:v1.7'
+  container 'lifebitai/multiqc:v1.7'
 
   input:
   file(vcfout) from vcfout
